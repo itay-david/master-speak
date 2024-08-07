@@ -1,0 +1,51 @@
+{
+  "languages": {
+    "english": {
+      "id": "english",
+      "name": "English",
+      "levels": [
+        {
+          "id": "A1",
+          "name": "A1",
+          "progress": 25,
+          "classes": [
+            {
+              "id": "class1",
+              "name": "Introductions",
+              "isCompleted": false
+            },
+            {
+              "id": "class2",
+              "name": "Simple Conversations",
+              "isCompleted": false
+            }
+          ]
+        },
+        {
+          "id": "A2",
+          "name": "A2",
+          "progress": 0,
+          "classes": []
+        }
+      ]
+    },
+    "spanish": {
+      "id": "spanish",
+      "name": "Spanish",
+      "levels": [
+        {
+          "id": "A1",
+          "name": "A1",
+          "progress": 0,
+          "classes": [
+            {
+              "id": "class1",
+              "name": "Introducciones",
+              "isCompleted": false
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

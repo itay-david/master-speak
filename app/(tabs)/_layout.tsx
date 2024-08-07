@@ -1,36 +1,54 @@
-import { Tabs } from 'expo-router';
+import { View, Text } from 'react-native';
 import React from 'react';
-
-import { TabBarIcon } from '@/components/navigation/TabBarIcon';
-import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
+import { Tabs } from 'expo-router';
+import Ionicons from '@expo/vector-icons/Ionicons';
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
-
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-        headerShown: false,
-      }}>
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Home',
-          tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon name={focused ? 'home' : 'home-outline'} color={color} />
+        tabBarStyle: { 
+          paddingBottom: 10, // Increase space for the tab bar at the bottom
+          height: 70, // Increase the height of the tab bar
+          paddingTop: 5, // Padding from the top of the tab bar
+        },
+      }}
+    >
+      <Tabs.Screen 
+        name='learn' 
+        options={{ 
+          headerShown: false,
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons name={focused ? 'book' : 'book-outline'} size={focused ? size + 4 : size} color={focused ? 'black' : color} />
           ),
-        }}
+          tabBarLabel: ({ focused }) => (
+            <Text style={{ fontSize: focused ? 12 : 10, color: focused ? 'black' : '#888' }}>למידה</Text>
+          ),
+        }} 
       />
-      <Tabs.Screen
-        name="explore"
-        options={{
-          title: 'Explore',
-          tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon name={focused ? 'code-slash' : 'code-slash-outline'} color={color} />
+      <Tabs.Screen 
+        name='community' 
+        options={{ 
+          headerShown: true,
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons name={focused ? 'chatbubbles' : 'chatbubbles-outline'} size={focused ? size + 4 : size} color={focused ? 'black' : color} />
           ),
-        }}
+          tabBarLabel: ({ focused }) => (
+            <Text style={{ fontSize: focused ? 12 : 10, color: focused ? 'black' : '#888' }}>קהילה</Text>
+          ),
+        }} 
+      />
+      <Tabs.Screen 
+        name='profile' 
+        options={{ 
+          headerShown: true,
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons name={focused ? 'person' : 'person-outline'} size={focused ? size + 4 : size} color={focused ? 'black' : color} />
+          ),
+          tabBarLabel: ({ focused }) => (
+            <Text style={{ fontSize: focused ? 12 : 10, color: focused ? 'black' : '#888' }}>פרופיל</Text>
+          ),
+        }} 
       />
     </Tabs>
   );
