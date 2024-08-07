@@ -8,3 +8,11 @@ export interface LanguageData {
     [key: string]: LessonData;
   };
 }
+
+export interface UserProgress {
+  [language: string]: {
+    [level: string]: {
+      [lessonKey: string]: boolean;
+    };
+  };
+}

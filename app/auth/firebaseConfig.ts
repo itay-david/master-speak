@@ -1,7 +1,5 @@
-// firebaseConfig.ts
-
 import { initializeApp } from 'firebase/app';
-import { getDatabase, ref, onValue, update, DatabaseReference } from 'firebase/database';
+import { getDatabase, ref, onValue, update, DatabaseReference, get } from 'firebase/database';
 
 export const firebaseConfig = {
   apiKey: "AIzaSyA3tfDiusb-Z2aZgUfBzjMhcbj0U2Mi6fw",
@@ -23,13 +21,17 @@ export const googleSignInConfig = {
 const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
 
-export { database, ref, onValue, update };
+export { database, ref, onValue, update, get };
 
 export function getLessonRef(language: string, level: string): DatabaseReference {
   return ref(database, `languages/${language}/levels/${level}`);
 }
 
-export function updateLessonCompletion(language: string, level: string, lessonKey: string, completed: boolean) {
-  const lessonRef = ref(database, `languages/${language}/levels/${level}/classes/${lessonKey}`);
-  return update(lessonRef, { completed });
+export function getUserProgressRef(userId: string): DatabaseReference {
+  return ref(database, `userProgress/${userId}`);
+}
+
+export function updateUserProgress(userId: string, language: string, level: string, lessonKey: string, completed: boolean) {
+  const progressRef = ref(database, `userProgress/${userId}/${language}/${level}/${lessonKey}`);
+  return update(progressRef, { completed });
 }

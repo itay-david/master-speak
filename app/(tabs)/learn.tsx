@@ -1,12 +1,10 @@
-// Learn.tsx
-
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, StatusBar, Platform, FlatList } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, StatusBar, Platform, FlatList, Animated, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import CountryFlag from "react-native-country-flag";
+import CountryFlag from 'react-native-country-flag';
 import { Picker } from '@react-native-picker/picker';
-import { onValue, getLessonRef, updateLessonCompletion } from '../auth/firebaseConfig';
-import { LanguageData, LessonData } from '../../constants/types';
+import { onValue, getLessonRef, getUserProgressRef, updateUserProgress } from '../auth/firebaseConfig';
+import { LanguageData, LessonData, UserProgress } from '../../constants/types';
 
 interface LessonItemProps {
   title: string;
@@ -23,28 +21,75 @@ const LessonItem: React.FC<LessonItemProps> = ({ title, completed, onPress }) =>
   );
 };
 
-const Learn: React.FC = () => {
+interface LearnProps {
+  userId: string;
+}
+
+const Learn: React.FC<LearnProps> = ({ userId }) => {
   const [languageData, setLanguageData] = useState<LanguageData | null>(null);
+  const [userProgress, setUserProgress] = useState<UserProgress | null>(null);
   const [currentLanguage, setCurrentLanguage] = useState('spanish');
   const [currentLevel, setCurrentLevel] = useState('A1');
+  const [dropdownVisible, setDropdownVisible] = useState(false);
+  const [fadeAnim] = useState(new Animated.Value(0));
 
-  const languages = ['spanish', 'french', 'german']; // Add all your languages
-  const levels = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2']; // Add all your levels
+  const languages: any = {
+    spanish: 'es',
+    french: 'fr',
+    german: 'de',
+    english: 'us'
+  };
+  const levels = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
 
   useEffect(() => {
     const lessonRef = getLessonRef(currentLanguage, currentLevel);
-    const unsubscribe = onValue(lessonRef, (snapshot) => {
+    const progressRef = getUserProgressRef(userId);
+
+    const unsubscribeLessons = onValue(lessonRef, (snapshot) => {
       const data = snapshot.val() as LanguageData;
       setLanguageData(data);
     });
 
-    return () => unsubscribe();
-  }, [currentLanguage, currentLevel]);
+    const unsubscribeProgress = onValue(progressRef, (snapshot) => {
+      const data = snapshot.val() as UserProgress;
+      setUserProgress(data);
+    });
+
+    return () => {
+      unsubscribeLessons();
+      unsubscribeProgress();
+    };
+  }, [userId, currentLanguage, currentLevel]);
 
   const handleLessonPress = (lessonKey: string) => {
-    updateLessonCompletion(currentLanguage, currentLevel, lessonKey, true)
-      .then(() => console.log('Lesson completion updated successfully'))
-      .catch((error) => console.error('Error updating lesson completion:', error));
+    updateUserProgress(userId, currentLanguage, currentLevel, lessonKey, true)
+      .then(() => console.log('User progress updated successfully'))
+      .catch((error) => console.error('Error updating user progress:', error));
+  };
+
+  const handleLanguageChange = (language: string) => {
+    setCurrentLanguage(language);
+    setDropdownVisible(false);
+  };
+
+  useEffect(() => {
+    if (dropdownVisible) {
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+    } else {
+      Animated.timing(fadeAnim, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [dropdownVisible]);
+
+  const isLessonCompleted = (lessonKey: string) => {
+    return userProgress?.[currentLanguage]?.[currentLevel]?.[lessonKey]?.completed || false;
   };
 
   return (
@@ -52,8 +97,8 @@ const Learn: React.FC = () => {
       <StatusBar barStyle="dark-content" />
       <View style={styles.topBar}>
         <View style={styles.flagArrowContainer}>
-          <TouchableOpacity style={styles.flagButton}>
-            <CountryFlag style={styles.flagEmoji} isoCode="es" size={20} />
+          <TouchableOpacity style={styles.flagButton} onPress={() => setDropdownVisible(!dropdownVisible)}>
+            <CountryFlag style={styles.flagEmoji} isoCode={languages[currentLanguage]} size={20} />
           </TouchableOpacity>
           <Ionicons name="chevron-down" size={16} color="black" style={styles.arrowIcon} />
         </View>
@@ -69,34 +114,38 @@ const Learn: React.FC = () => {
         </View>
       </View>
 
+      {dropdownVisible && (
+        <Animated.View style={[styles.dropdown, { opacity: fadeAnim }]}>
+          <ScrollView style={styles.dropdownScrollView}>
+            {Object.keys(languages).map((lang) => (
+              <TouchableOpacity key={lang} style={styles.dropdownItem} onPress={() => handleLanguageChange(lang)}>
+                <CountryFlag isoCode={languages[lang]} size={20} style={styles.dropdownFlag}  />
+                <Text style={styles.dropdownItemText}>{lang.charAt(0).toUpperCase() + lang.slice(1)}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </Animated.View>
+      )}
+
       <View style={styles.pickerContainer}>
-        <Picker
-          selectedValue={currentLanguage}
-          onValueChange={(itemValue) => setCurrentLanguage(itemValue)}
-          style={styles.picker}
-        >
-          {languages.map(lang => (
-            <Picker.Item key={lang} label={lang} value={lang} />
-          ))}
-        </Picker>
         <Picker
           selectedValue={currentLevel}
           onValueChange={(itemValue) => setCurrentLevel(itemValue)}
           style={styles.picker}
         >
-          {levels.map(level => (
+          {levels.map((level) => (
             <Picker.Item key={level} label={level} value={level} />
           ))}
         </Picker>
       </View>
-      
+
       <FlatList
         data={languageData ? Object.entries(languageData.classes) : []}
         keyExtractor={([key]) => key}
         renderItem={({ item: [key, value] }) => (
           <LessonItem
             title={value.title}
-            completed={value.completed}
+            completed={isLessonCompleted(key)}
             onPress={() => handleLessonPress(key)}
           />
         )}
@@ -105,10 +154,11 @@ const Learn: React.FC = () => {
   );
 };
 
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#f5f5f5',
     paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
   topBar: {
@@ -119,6 +169,12 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderBottomWidth: 1,
     borderBottomColor: '#e0e0e0',
+    backgroundColor: '#ffffff',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 5,
   },
   flagArrowContainer: {
     flexDirection: 'row',
@@ -133,6 +189,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#f0f0f0',
     marginRight: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 5,
   },
   flagEmoji: {
     width: '100%',
@@ -156,6 +217,8 @@ const styles = StyleSheet.create({
   },
   streakText: {
     fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333',
   },
   starContainer: {
     flexDirection: 'row',
@@ -164,14 +227,57 @@ const styles = StyleSheet.create({
   starText: {
     marginLeft: 5,
     fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333',
   },
   pickerContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     padding: 10,
+    backgroundColor: '#ffffff',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 5,
   },
   picker: {
     flex: 1,
+  },
+  dropdown: {
+    position: 'absolute',
+    top: 70,
+    left: 16,
+    right: 16,
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+    borderRadius: 8,
+    zIndex: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 6,
+    maxWidth: 200,
+  },
+  dropdownScrollView: {
+    maxHeight: 200,
+  },
+  dropdownItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
+  },
+  dropdownFlag: {
+
+  },
+  dropdownItemText: {
+    marginLeft: 10,
+    fontSize: 16,
+    color: '#333',
   },
   lessonItem: {
     flexDirection: 'row',
@@ -180,10 +286,20 @@ const styles = StyleSheet.create({
     padding: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#e0e0e0',
-    backgroundColor: 'fff'
+    backgroundColor: '#ffffff',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 5,
+    marginVertical: 5,
+    marginHorizontal: 10,
+    borderRadius: 10,
   },
   lessonTitle: {
     fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333',
   },
 });
 
