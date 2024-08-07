@@ -180,6 +180,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#e0e0e0',
+    backgroundColor: 'fff'
   },
   lessonTitle: {
     fontSize: 16,
