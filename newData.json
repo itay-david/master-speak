@@ -1,0 +1,24 @@
+{
+  "languages": {
+    "spanish": {
+      "levels": {
+        "A1": {
+          "classes": {
+            "class1": {
+              "title": "Hello!"
+            },
+            "class2": {
+              "title": "להיות ממכם"
+            },
+            "class3": {
+              "title": "Greetings and Introductions"
+            },
+            "class4": {
+              "title": "Numbers and Dates"
+            }
+          }
+        }
+      }
+    }
+  }
+}

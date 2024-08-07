@@ -6,6 +6,7 @@ import { Picker } from '@react-native-picker/picker';
 import { onValue, getLessonRef, getUserProgressRef, updateUserProgress } from '../auth/firebaseConfig';
 import { LanguageData, LessonData, UserProgress } from '../../constants/types';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import ProgressBar from '../../components/ProgressBar';
 
 interface LessonItemProps {
   title: string;
@@ -27,6 +28,8 @@ interface LearnProps {
 }
 
 const Learn: React.FC<LearnProps> = () => {
+  const [progress, setProgress] = useState(0);
+
   const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -56,6 +59,16 @@ const Learn: React.FC<LearnProps> = () => {
     english: 'us'
   };
   const levels = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
+
+  useEffect(() => {
+    if (languageData && userProgress) {
+      const totalLessons = Object.keys(languageData.classes).length;
+      const completedLessons = Object.values(userProgress[currentLanguage]?.[currentLevel] || {}).filter(
+        (lesson: any) => lesson.completed
+      ).length;
+      setProgress(totalLessons > 0 ? completedLessons / totalLessons : 0);
+    }
+  }, [languageData, userProgress, currentLanguage, currentLevel]);
 
   useEffect(() => {
     const lessonRef = getLessonRef(currentLanguage, currentLevel);
@@ -142,6 +155,12 @@ const Learn: React.FC<LearnProps> = () => {
           </ScrollView>
         </Animated.View>
       )}
+
+      <View style={styles.progressContainer}>
+        <Text style={styles.progressText}>Your Progress</Text>
+        <ProgressBar progress={progress} />
+        <Text style={styles.progressPercentage}>{`${Math.round(progress * 100)}%`}</Text>
+      </View>
 
       <View style={styles.pickerContainer}>
         <Picker
@@ -316,6 +335,30 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     color: '#333',
+  },
+  progressContainer: {
+    padding: 16,
+    backgroundColor: '#ffffff',
+    marginBottom: 10,
+    borderRadius: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 5,
+  },
+  progressText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    color: '#333',
+  },
+  progressPercentage: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#4CAF50',
+    textAlign: 'right',
+    marginTop: 5,
   },
 });
 

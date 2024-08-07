@@ -1,39 +1,29 @@
+// components/ProgressBar.tsx
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 
 interface ProgressBarProps {
-  progress: number;
+  progress: number; // 0 to 1
 }
 
-const ProgressBar: React.FC<ProgressBarProps> = ({ progress }) => (
-  <View style={styles.container}>
-    <Text style={styles.text}>{progress}%</Text>
-    <View style={styles.progressBar}>
-      <View style={{ ...styles.progress, width: `${progress}%` }} />
+const ProgressBar: React.FC<ProgressBarProps> = ({ progress }) => {
+  return (
+    <View style={styles.container}>
+      <View style={[styles.bar, { width: `${progress * 100}%` }]} />
     </View>
-  </View>
-);
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: 10,
-  },
-  text: {
-    fontSize: 16,
-    marginRight: 10,
-  },
-  progressBar: {
-    flex: 1,
-    height: 20,
-    backgroundColor: '#e0e0df',
+    height: 10,
+    backgroundColor: '#e0e0e0',
     borderRadius: 5,
     overflow: 'hidden',
   },
-  progress: {
+  bar: {
     height: '100%',
-    backgroundColor: '#76c7c0',
+    backgroundColor: '#4CAF50', // Green color
   },
 });
 
