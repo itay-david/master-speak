@@ -5,7 +5,7 @@ import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, on
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Google from 'expo-auth-session/providers/google';
 import * as WebBrowser from 'expo-web-browser';
-import { firebaseConfig, googleSignInConfig } from './firebaseConfig';
+import { firebaseConfig, googleSignInConfig } from '../auth/firebaseConfig';
 import { useAuth } from '../../constants/AuthContext';
 import { Link, Redirect, useNavigation } from "expo-router";
 

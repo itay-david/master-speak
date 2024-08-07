@@ -1,75 +1,50 @@
+// Learn.tsx
+
 import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, StatusBar, Platform, FlatList } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import CountryFlag from "react-native-country-flag";
-import { database } from '../auth/firebaseConfig';
-import ProgressBar from '../../components/ProgressBar';
-import ClassItem from '../../components/ClassItem';
-import { ref, set, get, update } from 'firebase/database';
+import { Picker } from '@react-native-picker/picker';
+import { onValue, getLessonRef, updateLessonCompletion } from '../auth/firebaseConfig';
+import { LanguageData, LessonData } from '../../constants/types';
 
-interface Class {
-  id: string;
-  name: string;
-  isCompleted: boolean;
+interface LessonItemProps {
+  title: string;
+  completed: boolean;
+  onPress: () => void;
 }
 
-interface Level {
-  id: string;
-  name: string;
-  progress: number;
-  classes: Class[];
-}
+const LessonItem: React.FC<LessonItemProps> = ({ title, completed, onPress }) => {
+  return (
+    <TouchableOpacity onPress={onPress} style={styles.lessonItem}>
+      <Text style={styles.lessonTitle}>{title}</Text>
+      {completed && <Ionicons name="checkmark-circle" size={24} color="green" />}
+    </TouchableOpacity>
+  );
+};
 
-interface Language {
-  id: string;
-  name: string;
-  levels: Level[];
-}
+const Learn: React.FC = () => {
+  const [languageData, setLanguageData] = useState<LanguageData | null>(null);
+  const [currentLanguage, setCurrentLanguage] = useState('spanish');
+  const [currentLevel, setCurrentLevel] = useState('A1');
 
-export default function Learn() {
-  const [progress, setProgress] = useState<number>(0);
-  const [classes, setClasses] = useState<Class[]>([]);
-  const [language, setLanguage] = useState<string>('Hebrew');
-  const [level, setLevel] = useState<string>('A1');
+  const languages = ['spanish', 'french', 'german']; // Add all your languages
+  const levels = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2']; // Add all your levels
 
   useEffect(() => {
-    const fetchData = async () => {
-      const dbRef = ref(database, `languages/${language}`);
-      const snapshot = await get(dbRef);
-      if (snapshot.exists()) {
-        const languageData = snapshot.val() as Language;
-        const levelData = languageData.levels.find((lvl) => lvl.name === level);
-        if (levelData) {
-          setClasses(levelData.classes);
-          setProgress(levelData.progress);
-        }
-      }
-    };
+    const lessonRef = getLessonRef(currentLanguage, currentLevel);
+    const unsubscribe = onValue(lessonRef, (snapshot) => {
+      const data = snapshot.val() as LanguageData;
+      setLanguageData(data);
+    });
 
-    fetchData();
-  }, [language, level]);
+    return () => unsubscribe();
+  }, [currentLanguage, currentLevel]);
 
-  const handlePress = async (classId: string) => {
-    const updatedClasses = classes.map((cls) =>
-      cls.id === classId ? { ...cls, isCompleted: !cls.isCompleted } : cls
-    );
-    setClasses(updatedClasses);
-
-    const completedClasses = updatedClasses.filter((cls) => cls.isCompleted).length;
-    const totalClasses = updatedClasses.length;
-    const newProgress = (completedClasses / totalClasses) * 100;
-    setProgress(newProgress);
-
-    const dbRef = ref(database, `languages/${language}`);
-    const snapshot = await get(dbRef);
-    if (snapshot.exists()) {
-      const languageData = snapshot.val();
-      const levels = languageData.levels.map((lvl: Level) =>
-        lvl.name === level ? { ...lvl, classes: updatedClasses, progress: newProgress } : lvl
-      );
-
-      await update(dbRef, { levels });
-    }
+  const handleLessonPress = (lessonKey: string) => {
+    updateLessonCompletion(currentLanguage, currentLevel, lessonKey, true)
+      .then(() => console.log('Lesson completion updated successfully'))
+      .catch((error) => console.error('Error updating lesson completion:', error));
   };
 
   return (
@@ -93,25 +68,42 @@ export default function Learn() {
           </View>
         </View>
       </View>
-      
-      <View style={styles.container}>
-        <Text style={styles.header}>מתחיל {level}</Text>
-        <ProgressBar progress={progress} />
-        <FlatList
-          data={classes}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <ClassItem
-              className={item.name}
-              isCompleted={item.isCompleted}
-              onPress={() => handlePress(item.id)}
-            />
-          )}
-        />
+
+      <View style={styles.pickerContainer}>
+        <Picker
+          selectedValue={currentLanguage}
+          onValueChange={(itemValue) => setCurrentLanguage(itemValue)}
+          style={styles.picker}
+        >
+          {languages.map(lang => (
+            <Picker.Item key={lang} label={lang} value={lang} />
+          ))}
+        </Picker>
+        <Picker
+          selectedValue={currentLevel}
+          onValueChange={(itemValue) => setCurrentLevel(itemValue)}
+          style={styles.picker}
+        >
+          {levels.map(level => (
+            <Picker.Item key={level} label={level} value={level} />
+          ))}
+        </Picker>
       </View>
+      
+      <FlatList
+        data={languageData ? Object.entries(languageData.classes) : []}
+        keyExtractor={([key]) => key}
+        renderItem={({ item: [key, value] }) => (
+          <LessonItem
+            title={value.title}
+            completed={value.completed}
+            onPress={() => handleLessonPress(key)}
+          />
+        )}
+      />
     </SafeAreaView>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -173,9 +165,25 @@ const styles = StyleSheet.create({
     marginLeft: 5,
     fontSize: 16,
   },
-  header: {
-    fontSize: 24,
-    marginBottom: 20,
-    textAlign: 'center',
+  pickerContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    padding: 10,
+  },
+  picker: {
+    flex: 1,
+  },
+  lessonItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
+  },
+  lessonTitle: {
+    fontSize: 16,
   },
 });
+
+export default Learn;
