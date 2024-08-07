@@ -5,6 +5,7 @@ import CountryFlag from 'react-native-country-flag';
 import { Picker } from '@react-native-picker/picker';
 import { onValue, getLessonRef, getUserProgressRef, updateUserProgress } from '../auth/firebaseConfig';
 import { LanguageData, LessonData, UserProgress } from '../../constants/types';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
 
 interface LessonItemProps {
   title: string;
@@ -25,7 +26,22 @@ interface LearnProps {
   userId: string;
 }
 
-const Learn: React.FC<LearnProps> = ({ userId }) => {
+const Learn: React.FC<LearnProps> = () => {
+  const [userId, setUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const auth = getAuth();
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setUserId(user.uid);
+      } else {
+        setUserId(null);
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
   const [languageData, setLanguageData] = useState<LanguageData | null>(null);
   const [userProgress, setUserProgress] = useState<UserProgress | null>(null);
   const [currentLanguage, setCurrentLanguage] = useState('spanish');
