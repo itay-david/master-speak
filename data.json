@@ -26,6 +26,3 @@
     }
   }
 }
-// do that if a class completed today so it will add to the strik and if in 24 hours no class completed so it will restart the strik counter
-
-// do that if there is no classes for language or level so it will show no classes yet

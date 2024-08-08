@@ -12,25 +12,42 @@ interface LessonItemProps {
   title: string;
   completed: boolean;
   onPress: () => void;
+  nextLevel: string;
 }
 
-const LessonItem: React.FC<LessonItemProps> = ({ title, completed, onPress }) => {
+const LessonItem: React.FC<LessonItemProps> = ({ title, completed, onPress, nextLevel }) => {
   return (
-    <TouchableOpacity onPress={onPress} style={styles.lessonItem}>
-      <Text style={styles.lessonTitle}>{title}</Text>
-      {completed && <Ionicons name="checkmark-circle" size={24} color="green" />}
-    </TouchableOpacity>
+    <View>
+      <TouchableOpacity onPress={onPress} style={styles.lessonItem}>
+        <Text style={styles.lessonTitle}>{title}</Text>
+        {completed && <Ionicons name="checkmark-circle" size={24} color="green" />}
+      </TouchableOpacity>
+      {nextLevel ? <Text style={styles.nextLevelText}>{nextLevel}</Text> : ''}
+    </View>
   );
 };
 
-interface LearnProps {
-  userId: string;
-}
-
-const Learn: React.FC<LearnProps> = () => {
+const Learn: React.FC = () => {
   const [progress, setProgress] = useState(0);
-
   const [userId, setUserId] = useState<string | null>(null);
+  const [languageData, setLanguageData] = useState<LanguageData | null>(null);
+  const [userProgress, setUserProgress] = useState<UserProgress | null>(null);
+  const [currentLanguage, setCurrentLanguage] = useState('spanish');
+  const [currentLevel, setCurrentLevel] = useState('A1');
+  const [dropdownVisible, setDropdownVisible] = useState(false);
+  const [fadeAnim] = useState(new Animated.Value(0));
+
+  const [streak, setStreak] = useState(0);
+  const [lastCompletionDate, setLastCompletionDate] = useState<Date | null>(null);
+
+
+  const languages: any = {
+    spanish: 'es',
+    french: 'fr',
+    german: 'de',
+    english: 'us',
+  };
+  const levels = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
 
   useEffect(() => {
     const auth = getAuth();
@@ -44,31 +61,6 @@ const Learn: React.FC<LearnProps> = () => {
 
     return () => unsubscribe();
   }, []);
-
-  const [languageData, setLanguageData] = useState<LanguageData | null>(null);
-  const [userProgress, setUserProgress] = useState<UserProgress | null>(null);
-  const [currentLanguage, setCurrentLanguage] = useState('spanish');
-  const [currentLevel, setCurrentLevel] = useState('A1');
-  const [dropdownVisible, setDropdownVisible] = useState(false);
-  const [fadeAnim] = useState(new Animated.Value(0));
-
-  const languages: any = {
-    spanish: 'es',
-    french: 'fr',
-    german: 'de',
-    english: 'us'
-  };
-  const levels = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
-
-  useEffect(() => {
-    if (languageData && userProgress) {
-      const totalLessons = Object.keys(languageData.classes).length;
-      const completedLessons = Object.values(userProgress[currentLanguage]?.[currentLevel] || {}).filter(
-        (lesson: any) => lesson.completed
-      ).length;
-      setProgress(totalLessons > 0 ? completedLessons / totalLessons : 0);
-    }
-  }, [languageData, userProgress, currentLanguage, currentLevel]);
 
   useEffect(() => {
     const lessonRef = getLessonRef(currentLanguage, currentLevel);
@@ -90,16 +82,67 @@ const Learn: React.FC<LearnProps> = () => {
     };
   }, [userId, currentLanguage, currentLevel]);
 
+  useEffect(() => {
+    if (languageData && userProgress) {
+      const totalLessons = Object.keys(languageData.classes).length;
+      const completedLessons = Object.values(userProgress[currentLanguage]?.[currentLevel] || {}).filter(
+        (lesson: any) => lesson.completed
+      ).length;
+      setProgress(totalLessons > 0 ? completedLessons / totalLessons : 0);
+    }
+  }, [languageData, userProgress, currentLanguage, currentLevel]);
+
   const handleLessonPress = (lessonKey: string) => {
+    const today = new Date();
+    
+    if (!lastCompletionDate || (today.getTime() - lastCompletionDate.getTime()) >= 24 * 60 * 60 * 1000) {
+      setStreak(1); // Start streak or reset if more than 24 hours have passed
+    } else {
+      if (today.toDateString() !== lastCompletionDate.toDateString()) {
+        setStreak(streak + 1); // Increment streak only if it’s a new day
+      }
+    }
+  
+    setLastCompletionDate(today);
+  
     updateUserProgress(userId, currentLanguage, currentLevel, lessonKey, true)
       .then(() => console.log('User progress updated successfully'))
       .catch((error) => console.error('Error updating user progress:', error));
   };
 
+  useEffect(() => {
+    const checkStreak = () => {
+      if (lastCompletionDate) {
+        const now = new Date();
+        if ((now.getTime() - lastCompletionDate.getTime()) >= 24 * 60 * 60 * 1000) {
+          setStreak(0); // Reset streak if no class completed within 24 hours
+        }
+      }
+    };
+  
+    const interval = setInterval(checkStreak, 1000 * 60 * 60); // Check every hour
+    return () => clearInterval(interval);
+  }, [lastCompletionDate]);
+  
+
   const handleLanguageChange = (language: string) => {
     setCurrentLanguage(language);
     setDropdownVisible(false);
   };
+
+  useEffect(() => {
+    const checkStreak = () => {
+      if (lastCompletionDate) {
+        const now = new Date();
+        if ((now.getTime() - lastCompletionDate.getTime()) >= 24 * 60 * 60 * 1000) {
+          setStreak(0); // Reset streak if no class completed within 24 hours
+        }
+      }
+    };
+  
+    const interval = setInterval(checkStreak, 1000 * 60 * 60); // Check every hour
+    return () => clearInterval(interval);
+  }, [lastCompletionDate]);
 
   useEffect(() => {
     if (dropdownVisible) {
@@ -134,8 +177,8 @@ const Learn: React.FC<LearnProps> = () => {
         <View style={styles.statsContainer}>
           <View style={styles.streakContainer}>
             <Text style={styles.streakEmoji}>🔥</Text>
-            <Text style={styles.streakText}>7</Text>
-          </View>
+            <Text style={styles.streakText}>{streak}</Text>
+            </View>
           <View style={styles.starContainer}>
             <Ionicons name="star" size={20} color="#FFD700" />
             <Text style={styles.starText}>15/20</Text>
@@ -148,7 +191,7 @@ const Learn: React.FC<LearnProps> = () => {
           <ScrollView style={styles.dropdownScrollView}>
             {Object.keys(languages).map((lang) => (
               <TouchableOpacity key={lang} style={styles.dropdownItem} onPress={() => handleLanguageChange(lang)}>
-                <CountryFlag isoCode={languages[lang]} size={20} style={styles.dropdownFlag}  />
+                <CountryFlag isoCode={languages[lang]} size={20} style={styles.dropdownFlag} />
                 <Text style={styles.dropdownItemText}>{lang.charAt(0).toUpperCase() + lang.slice(1)}</Text>
               </TouchableOpacity>
             ))}
@@ -174,17 +217,24 @@ const Learn: React.FC<LearnProps> = () => {
         </Picker>
       </View>
 
-      <FlatList
-        data={languageData ? Object.entries(languageData.classes) : []}
-        keyExtractor={([key]) => key}
-        renderItem={({ item: [key, value] }) => (
-          <LessonItem
-            title={value.title}
-            completed={isLessonCompleted(key)}
-            onPress={() => handleLessonPress(key)}
-          />
-        )}
-      />
+      {languageData && Object.keys(languageData.classes).length > 0 ? (
+        <FlatList
+          data={Object.entries(languageData.classes)}
+          keyExtractor={([key]) => key}
+          renderItem={({ item: [key, value] }) => (
+            <LessonItem
+              title={value.title}
+              completed={isLessonCompleted(key)}
+              onPress={() => handleLessonPress(key)}
+              nextLevel={value.nextLevel}
+            />
+          )}
+        />
+      ) : (
+        <View style={styles.noClassesContainer}>
+          <Text style={styles.noClassesText}>No classes here yet</Text>
+        </View>
+      )}
     </SafeAreaView>
   );
 };
@@ -359,6 +409,18 @@ const styles = StyleSheet.create({
     color: '#4CAF50',
     textAlign: 'right',
     marginTop: 5,
+  },
+  noClassesContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  noClassesText: {
+    fontSize: 18,
+    color: '#666',
+  },
+  nextLevelText: {
+    fontSize: 30
   },
 });
 

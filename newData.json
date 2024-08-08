@@ -11,9 +11,22 @@
               "title": "להיות ממכם"
             },
             "class3": {
-              "title": "Greetings and Introductions"
+              "title": "Greetings and Introductions",
+              "nextLevel": "חלק 2"
             },
             "class4": {
+              "title": "Numbers and Dates"
+            },
+            "class5": {
+              "title": "Hello!"
+            },
+            "class6": {
+              "title": "להיות ממכם"
+            },
+            "class7": {
+              "title": "Greetings and Introductions"
+            },
+            "class8": {
               "title": "Numbers and Dates"
             }
           }
