@@ -11,9 +11,9 @@ interface Task {
   options?: { [key: string]: string };
   answer?: string;
   onComplete: () => void;
-  swiperRef: any;  // Add this prop to receive swiper reference
-  taskKey: string; // Add this prop to identify the task
-  completed: boolean; // Add this prop to determine if the task is completed
+  swiperRef: any;
+  taskKey: string;
+  completed: boolean;
 }
 
 const TaskComponent: React.FC<Task> = ({
@@ -35,12 +35,25 @@ const TaskComponent: React.FC<Task> = ({
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
 
   const handleOptionPress = (option: string) => {
+    if (selectedOption !== null) return;
+
     const isAnswerCorrect = option === answer;
     setIsCorrect(isAnswerCorrect);
     setSelectedOption(option);
     setShowCard(true);
+
     if (isAnswerCorrect) {
       onComplete();
+    }
+  };
+
+  const handleNextPress = () => {
+    if (isCorrect === false) {
+      setShowCard(false);
+      setSelectedOption(null);
+      setIsCorrect(null);
+    } else {
+      swiperRef.current.scrollBy(1);
     }
   };
 
@@ -72,6 +85,7 @@ const TaskComponent: React.FC<Task> = ({
                         : {},
                     ]}
                     onPress={() => handleOptionPress(option)}
+                    disabled={selectedOption !== null}
                   >
                     <Text style={styles.optionText}>{option}</Text>
                   </TouchableOpacity>
@@ -92,11 +106,7 @@ const TaskComponent: React.FC<Task> = ({
         <Animated.View
           style={[
             styles.card,
-            isCorrect === true
-              ? styles.correctCard
-              : isCorrect === false
-              ? styles.incorrectCard
-              : {},
+            isCorrect ? styles.correctCard : styles.incorrectCard,
           ]}
         >
           <Text style={styles.resultText}>
@@ -106,11 +116,13 @@ const TaskComponent: React.FC<Task> = ({
           <TouchableOpacity
             style={[
               styles.nextButton,
-              isCorrect === false ? styles.incorrectNextButton : {},
+              !isCorrect ? styles.incorrectNextButton : {},
             ]}
-            onPress={() => swiperRef.current.scrollBy(1)}
+            onPress={handleNextPress}
           >
-            <Text style={styles.nextButtonText}>Next</Text>
+            <Text style={styles.nextButtonText}>
+              {isCorrect ? 'Next' : 'Retry'}
+            </Text>
           </TouchableOpacity>
         </Animated.View>
       )}
