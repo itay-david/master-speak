@@ -7,6 +7,8 @@ import { onValue, getLessonRef, getUserProgressRef, updateUserProgress } from '.
 import { LanguageData, LessonData, UserProgress } from '../../constants/types';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import ProgressBar from '../../components/ProgressBar';
+import { useNavigation } from '@react-navigation/native';
+import LessonScreen from '../LessonScreen';
 
 interface LessonItemProps {
   title: string;
@@ -36,10 +38,9 @@ const Learn: React.FC = () => {
   const [currentLevel, setCurrentLevel] = useState('A1');
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const [fadeAnim] = useState(new Animated.Value(0));
-
   const [streak, setStreak] = useState(0);
   const [lastCompletionDate, setLastCompletionDate] = useState<Date | null>(null);
-
+  const navigation = useNavigation();
 
   const languages: any = {
     spanish: 'es',
@@ -108,6 +109,14 @@ const Learn: React.FC = () => {
     updateUserProgress(userId, currentLanguage, currentLevel, lessonKey, true)
       .then(() => console.log('User progress updated successfully'))
       .catch((error) => console.error('Error updating user progress:', error));
+
+  
+    navigation.navigate('LessonScreen', {
+      userId,
+      language: currentLanguage,
+      level: currentLevel,
+      lessonKey,
+    });
   };
 
   useEffect(() => {
@@ -123,26 +132,11 @@ const Learn: React.FC = () => {
     const interval = setInterval(checkStreak, 1000 * 60 * 60); // Check every hour
     return () => clearInterval(interval);
   }, [lastCompletionDate]);
-  
 
   const handleLanguageChange = (language: string) => {
     setCurrentLanguage(language);
     setDropdownVisible(false);
   };
-
-  useEffect(() => {
-    const checkStreak = () => {
-      if (lastCompletionDate) {
-        const now = new Date();
-        if ((now.getTime() - lastCompletionDate.getTime()) >= 24 * 60 * 60 * 1000) {
-          setStreak(0); // Reset streak if no class completed within 24 hours
-        }
-      }
-    };
-  
-    const interval = setInterval(checkStreak, 1000 * 60 * 60); // Check every hour
-    return () => clearInterval(interval);
-  }, [lastCompletionDate]);
 
   useEffect(() => {
     if (dropdownVisible) {
@@ -220,20 +214,18 @@ const Learn: React.FC = () => {
       {languageData && Object.keys(languageData.classes).length > 0 ? (
         <FlatList
           data={Object.entries(languageData.classes)}
-          keyExtractor={([key]) => key}
-          renderItem={({ item: [key, value] }) => (
+          keyExtractor={([lessonKey]) => lessonKey}
+          renderItem={({ item: [lessonKey, lessonData] }) => (
             <LessonItem
-              title={value.title}
-              completed={isLessonCompleted(key)}
-              onPress={() => handleLessonPress(key)}
-              nextLevel={value.nextLevel}
+              title={lessonData.title}
+              completed={isLessonCompleted(lessonKey)}
+              onPress={() => handleLessonPress(lessonKey)}
+              nextLevel={lessonData.nextLevel}
             />
           )}
         />
       ) : (
-        <View style={styles.noClassesContainer}>
-          <Text style={styles.noClassesText}>No classes here yet</Text>
-        </View>
+        <Text>No lessons available.</Text>
       )}
     </SafeAreaView>
   );

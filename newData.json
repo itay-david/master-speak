@@ -5,7 +5,31 @@
         "A1": {
           "classes": {
             "class1": {
-              "title": "Hello!"
+              "title": "Hello!",
+              "lessons": {
+                "lesson1": {
+                  "type": "newSentence",
+                  "title": "Hey Look, New Sentence!",
+                  "sentence": "some sentence",
+                  "vidUrl": "url",
+                  "translate": "translate here",
+                  "descreption": "descreption here"
+                },
+                "lesson2": {
+                  "type": "completeSentence",
+                  "title": "complete the Sentence!",
+                  "sentence": "blank sentence",
+                  "revealedSentence": "some sentence",
+                  "vidUrl": "url",
+                  "translate": "translate here",
+                  "descreption": "descreption here",
+                  "options": {
+                    "option1": "some",
+                    "option2": "other"
+                  },
+                  "answer": "some"
+                }
+              } 
             },
             "class2": {
               "title": "להיות ממכם"

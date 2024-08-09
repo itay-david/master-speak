@@ -23,9 +23,14 @@ const database = getDatabase(app);
 
 export { database, ref, onValue, update, get };
 
-export function getLessonRef(language: string, level: string): DatabaseReference {
+export function getLessonRef(language: string, level: string, lessonKey: string): DatabaseReference {
   return ref(database, `languages/${language}/levels/${level}`);
 }
+
+export function getLessonDataRef(language: string, level: string, lessonKey: string): DatabaseReference {
+  return ref(database, `languages/${language}/levels/${level}/classes/${lessonKey}/lessons`);
+}
+
 
 export function getUserProgressRef(userId: string): DatabaseReference {
   return ref(database, `userProgress/${userId}`);
