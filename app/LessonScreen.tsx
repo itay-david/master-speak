@@ -1,33 +1,31 @@
-import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, ScrollView, Text } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, StyleSheet, Text, Dimensions } from 'react-native';
 import ProgressBar from '../components/ProgressBar';
 import TaskComponent from '../components/TaskComponent';
+import Swiper from 'react-native-swiper';
 import { getLessonDataRef, getUserProgressRef, onValue, updateUserProgress } from './auth/firebaseConfig';
-import { User } from 'firebase/auth';
 
 interface Lesson {
   type: 'newSentence' | 'completeSentence';
   title: string;
   sentence?: string;
+  translate?: string;
+  description?: string;
   revealedSentence?: string;
   options?: { [key: string]: string };
   answer?: string;
 }
 
-const LessonScreen: React.FC<{ userId: User; language: string; level: string; lessonKey: string; route: any }> = ({
-  userId,
-  language,
-  level,
-  lessonKey,
-}) => {
-  
+function LessonScreen({ route }: any) {
+  const { userId, language, level, lessonKey } = route.params;
   const [lessons, setLessons] = useState<{ [key: string]: Lesson } | null>(null);
+  const [currentIndex, setCurrentIndex] = useState(0);
   const [completedTasks, setCompletedTasks] = useState<{ [key: string]: boolean }>({});
+  const swiperRef = useRef<any>(null);
 
   useEffect(() => {
-    const lessonRef = getLessonDataRef('spanish', 'A1', 'class1');
+    const lessonRef = getLessonDataRef(language, level, lessonKey);
     const progressRef = getUserProgressRef(userId);
-    console.log(language, level, lessonKey)
 
     const unsubscribeLessons = onValue(lessonRef, (snapshot) => {
       const lessonsData = snapshot.val();
@@ -57,33 +55,51 @@ const LessonScreen: React.FC<{ userId: User; language: string; level: string; le
     }));
   };
 
+  const handleIndexChanged = (index: number) => {
+    setCurrentIndex(index);
+  };
+
   if (!lessons) {
     return <Text>Loading...</Text>;
   }
 
-  const progress = Object.values(lessons).filter(task => completedTasks[task.title]).length / Object.keys(lessons).length;
+  const totalTasks = Object.keys(lessons).length;
+  const progress = currentIndex / (totalTasks - 1);
 
   return (
     <View style={styles.container}>
-      <ProgressBar progress={progress * 100} />
-      <ScrollView style={styles.lessonContainer}>
-        {Object.entries(lessons).map(([taskKey, taskData]) => (
-          <TaskComponent
-            key={taskKey}
-            type={taskData.type}
-            title={taskData.title}
-            sentence={taskData.sentence}
-            revealedSentence={taskData.revealedSentence}
-            options={taskData.options}
-            answer={taskData.answer}
-            onComplete={() => handleTaskComplete(taskKey)}
-            completed={!!completedTasks[taskKey]}
-          />
+      <ProgressBar progress={progress} />
+      <Swiper
+        ref={swiperRef}
+        loop={false}
+        showsPagination={true}
+        paginationStyle={styles.paginationStyle}
+        activeDotStyle={styles.activeDot}
+        onIndexChanged={handleIndexChanged}
+      >
+        {Object.entries(lessons).map(([taskKey, taskData], index) => (
+          <View style={styles.lessonContainer} key={taskKey}>
+            <TaskComponent
+              type={taskData.type}
+              title={taskData.title}
+              sentence={taskData.sentence}
+              description={taskData.description}
+              revealedSentence={taskData.revealedSentence}
+              options={taskData.options}
+              answer={taskData.answer}
+              onComplete={() => handleTaskComplete(taskKey)}
+              swiperRef={swiperRef}
+              taskKey={taskKey}
+              completed={!!completedTasks[taskKey]}
+            />
+          </View>
         ))}
-      </ScrollView>
+      </Swiper>
     </View>
   );
-};
+}
+
+const { height, width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   container: {
@@ -92,8 +108,15 @@ const styles = StyleSheet.create({
   },
   lessonContainer: {
     flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
     paddingHorizontal: 16,
-    paddingVertical: 24,
+  },
+  paginationStyle: {
+    bottom: 10,
+  },
+  activeDot: {
+    backgroundColor: '#4CAF50',
   },
 });
 
