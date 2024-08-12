@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Animated, Dimensions } from 'react-native';
 
 interface Task {
-  type: 'newSentence' | 'completeSentence';
+  type: 'newSentence' | 'completeSentence' | 'orderSentence';
   title: string;
   sentence?: string;
   translate?: string;
@@ -10,8 +10,10 @@ interface Task {
   revealedSentence?: string;
   options?: { [key: string]: string };
   answer?: string;
-  onComplete: () => void;
-  swiperRef: any;
+  words?: string[];
+  vidUrl?: string;
+  onComplete: (isCorrect: boolean) => void;
+  onNextTask: () => void;
   taskKey: string;
   completed: boolean;
 }
@@ -25,14 +27,24 @@ const TaskComponent: React.FC<Task> = ({
   description,
   options,
   answer,
+  words,
+  vidUrl,
   onComplete,
-  swiperRef,
+  onNextTask,
   taskKey,
   completed,
 }) => {
   const [showCard, setShowCard] = useState(false);
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
+  const [orderedWords, setOrderedWords] = useState<string[]>([]);
+  const [availableWords, setAvailableWords] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (type === 'orderSentence' && words) {
+      setAvailableWords(words.slice().sort(() => Math.random() - 0.5));
+    }
+  }, [type, words]);
 
   const handleOptionPress = (option: string) => {
     if (selectedOption !== null) return;
@@ -41,59 +53,118 @@ const TaskComponent: React.FC<Task> = ({
     setIsCorrect(isAnswerCorrect);
     setSelectedOption(option);
     setShowCard(true);
+    onComplete(isAnswerCorrect);
+  };
 
-    if (isAnswerCorrect) {
-      onComplete();
+  const handleWordPress = (word: string, isOrdered: boolean) => {
+    if (isOrdered) {
+      // Remove the word from orderedWords and add it back to availableWords
+      setOrderedWords(orderedWords.filter(w => w !== word));
+      setAvailableWords([...availableWords, word]);
+    } else {
+      // Add the word to orderedWords and remove it from availableWords
+      setOrderedWords([...orderedWords, word]);
+      setAvailableWords(availableWords.filter(w => w !== word));
+
+      // Check if the sentence is complete
+      if (orderedWords.length + 1 === words?.length) {
+        const isAnswerCorrect = [...orderedWords, word].join(' ') === words?.join(' ');
+        setIsCorrect(isAnswerCorrect);
+        setShowCard(true);
+        onComplete(isAnswerCorrect);
+      }
     }
   };
 
   const handleNextPress = () => {
-    if (isCorrect === false) {
-      setShowCard(false);
-      setSelectedOption(null);
-      setIsCorrect(null);
-    } else {
-      swiperRef.current.scrollBy(1);
+    setShowCard(false);
+    setSelectedOption(null);
+    setIsCorrect(null);
+    setOrderedWords([]);
+    if (type === 'orderSentence' && words) {
+      setAvailableWords(words.slice().sort(() => Math.random() - 0.5));
     }
+    onNextTask();
   };
+
+  const renderNewSentenceTask = () => (
+    <View>
+      <Text style={styles.title}>{title}</Text>
+      <Text style={styles.sentence}>{revealedSentence || sentence}</Text>
+      <TouchableOpacity style={styles.nextButton} onPress={handleNextPress}>
+        <Text style={styles.nextButtonText}>Next</Text>
+      </TouchableOpacity>
+    </View>
+  );
+
+  const renderCompleteSentenceTask = () => (
+    <View>
+      <Text style={styles.title}>{title}</Text>
+      <Text style={styles.sentence}>{selectedOption === answer ? revealedSentence : sentence}</Text>
+      {options && (
+        <View style={styles.optionsContainer}>
+          {Object.entries(options).map(([key, option]) => (
+            <TouchableOpacity
+              key={key}
+              style={[
+                styles.optionButton,
+                selectedOption === option
+                  ? option === answer
+                    ? styles.correctOption
+                    : styles.incorrectOption
+                  : {},
+              ]}
+              onPress={() => handleOptionPress(option)}
+              disabled={selectedOption !== null}
+            >
+              <Text style={styles.optionText}>{option}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      )}
+    </View>
+  );
+
+  const renderOrderSentenceTask = () => (
+    <View style={styles.orderSentenceContainer}>
+      <Text style={styles.title}>{title}</Text>
+      <View style={styles.sentenceContainer}>
+        {orderedWords.map((word, index) => (
+          <TouchableOpacity
+            key={index}
+            style={styles.orderedWordContainer}
+            onPress={() => handleWordPress(word, true)}
+          >
+            <Text style={styles.orderedWord}>{word}</Text>
+          </TouchableOpacity>
+        ))}
+        {[...Array(words!.length - orderedWords.length)].map((_, index) => (
+          <View key={`empty-${index}`} style={styles.emptyWordContainer} />
+        ))}
+      </View>
+      <Text style={styles.instructionText}>Tap words to add or remove them</Text>
+      <View style={styles.availableWordsContainer}>
+        {availableWords.map((word, index) => (
+          <TouchableOpacity
+            key={index}
+            style={styles.wordButton}
+            onPress={() => handleWordPress(word, false)}
+          >
+            <Text style={styles.wordButtonText}>{word}</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+    </View>
+  );
 
   const renderTask = () => {
     switch (type) {
       case 'newSentence':
-        return (
-          <View>
-            <Text style={styles.title}>{title}</Text>
-            <Text style={styles.sentence}>{sentence}</Text>
-          </View>
-        );
+        return renderNewSentenceTask();
       case 'completeSentence':
-        return (
-          <View>
-            <Text style={styles.title}>{title}</Text>
-            <Text style={styles.sentence}>{revealedSentence || sentence}</Text>
-            {options && (
-              <View style={styles.optionsContainer}>
-                {Object.entries(options).map(([key, option]) => (
-                  <TouchableOpacity
-                    key={key}
-                    style={[
-                      styles.optionButton,
-                      selectedOption === option
-                        ? option === answer
-                          ? styles.correctOption
-                          : styles.incorrectOption
-                        : {},
-                    ]}
-                    onPress={() => handleOptionPress(option)}
-                    disabled={selectedOption !== null}
-                  >
-                    <Text style={styles.optionText}>{option}</Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            )}
-          </View>
-        );
+        return renderCompleteSentenceTask();
+      case 'orderSentence':
+        return renderOrderSentenceTask();
       default:
         return null;
     }
@@ -120,9 +191,7 @@ const TaskComponent: React.FC<Task> = ({
             ]}
             onPress={handleNextPress}
           >
-            <Text style={styles.nextButtonText}>
-              {isCorrect ? 'Next' : 'Retry'}
-            </Text>
+            <Text style={styles.nextButtonText}>Next</Text>
           </TouchableOpacity>
         </Animated.View>
       )}
@@ -135,13 +204,9 @@ const { width, height } = Dimensions.get('window');
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    width: width,
-    height: height,
-    backgroundColor: '#E0F7FA',
-    padding: 16,
+    backgroundColor: '#f5f5f5',
     justifyContent: 'center',
     alignItems: 'center',
-    position: 'relative',
   },
   title: {
     fontSize: 22,
@@ -219,6 +284,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 30,
     borderRadius: 25,
     alignSelf: 'center',
+    marginTop: 16,
   },
   incorrectNextButton: {
     backgroundColor: '#F44336',
@@ -227,6 +293,69 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  orderSentenceContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },
+  sentenceContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginVertical: 20,
+    minHeight: 50,
+  },
+  orderedWordContainer: {
+    backgroundColor: '#E3F2FD',
+    borderRadius: 8,
+    padding: 10,
+    margin: 5,
+    minWidth: 60,
+    alignItems: 'center',
+  },
+  orderedWord: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#1565C0',
+  },
+  emptyWordContainer: {
+    backgroundColor: '#EEEEEE',
+    borderRadius: 8,
+    padding: 10,
+    margin: 5,
+    minWidth: 60,
+    height: 44,
+  },
+  instructionText: {
+    fontSize: 16,
+    color: '#757575',
+    marginBottom: 10,
+  },
+  availableWordsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    marginTop: 20,
+  },
+  wordButton: {
+    backgroundColor: '#2196F3',
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 25,
+    margin: 5,
+  },
+  wordButtonText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+  },
+  video: {
+    width: width * 0.8,
+    height: height * 0.4,
+    marginBottom: 20,
   },
 });
 

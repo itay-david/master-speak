@@ -1,4 +1,3 @@
-// components/ProgressBar.tsx
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
 
@@ -9,7 +8,7 @@ interface ProgressBarProps {
 const ProgressBar: React.FC<ProgressBarProps> = ({ progress }) => {
   return (
     <View style={styles.container}>
-      <View style={[styles.bar, { width: `${progress * 100}%` }]} />
+      <View style={[styles.progressBar, { width: `${progress * 100}%` }]} />
     </View>
   );
 };
@@ -20,10 +19,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#e0e0e0',
     borderRadius: 5,
     overflow: 'hidden',
+    marginBottom: 20,
   },
-  bar: {
+  progressBar: {
     height: '100%',
-    backgroundColor: '#4CAF50', // Green color
+    backgroundColor: '#4CAF50',
   },
 });
 

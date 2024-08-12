@@ -11,18 +11,18 @@
                   "type": "newSentence",
                   "title": "Hey Look, New Sentence!",
                   "sentence": "some sentence",
-                  "vidUrl": "url",
+                  "vidUrl": "https://www.youtube.com/watch?v=jQctQKwMyl8&list=RDjQctQKwMyl8&start_radio=1",
                   "translate": "translate here",
-                  "descreption": "descreption here"
+                  "description": "descreption here"
                 },
                 "lesson2": {
                   "type": "completeSentence",
                   "title": "complete the Sentence!",
                   "sentence": "blank sentence",
                   "revealedSentence": "some sentence",
-                  "vidUrl": "url",
+                  "vidUrl": "https://www.youtube.com/watch?v=jQctQKwMyl8&list=RDjQctQKwMyl8&start_radio=1",
                   "translate": "translate here",
-                  "descreption": "descreption here",
+                  "description": "descreption here",
                   "options": {
                     "option1": "some",
                     "option2": "other"
@@ -34,14 +34,43 @@
                   "title": "complete the Sentence!",
                   "sentence": "blank sentence",
                   "revealedSentence": "some sentence",
-                  "vidUrl": "url",
+                  "vidUrl": "https://www.youtube.com/watch?v=jQctQKwMyl8&list=RDjQctQKwMyl8&start_radio=1",
                   "translate": "translate here",
-                  "descreption": "descreption here",
+                  "description": "descreption here",
                   "options": {
                     "option1": "some",
                     "option2": "other"
                   },
                   "answer": "some"
+                },
+                "lesson4": {
+                  "type": "newSentence",
+                  "title": "Hey Look, New Sentence!",
+                  "sentence": "some sentence 2",
+                  "vidUrl": "https://www.youtube.com/watch?v=jQctQKwMyl8&list=RDjQctQKwMyl8&start_radio=1",
+                  "translate": "translate here 2",
+                  "description": "descreption here 2"
+                },
+                "lesson5": {
+                  "type": "completeSentence",
+                  "title": "complete the Sentence!",
+                  "sentence": "blank sentence 5",
+                  "revealedSentence": "some sentence 5",
+                  "vidUrl": "https://www.youtube.com/watch?v=jQctQKwMyl8&list=RDjQctQKwMyl8&start_radio=1",
+                  "translate": "translate here 5",
+                  "description": "descreption here 5",
+                  "options": {
+                    "option1": "some",
+                    "option2": "other"
+                  },
+                  "answer": "some"
+                },
+                "lesson6": {
+                  "type": "orderSentence",
+                  "title": "Put the words in order.",
+                  "words": ["Je", "ne", "suis", "pas", "stressé."],
+                  "translate": "I am not stressed.",
+                  "description": "This sentence uses the negative form 'ne ... pas' around the verb 'suis' (am)."
                 }
               } 
             },

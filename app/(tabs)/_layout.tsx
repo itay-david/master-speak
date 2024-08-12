@@ -1,21 +1,28 @@
 import { View, Text } from 'react-native';
 import React from 'react';
-import { Tabs } from 'expo-router';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import Learn from './learn';
+import Community from './community';
+import Profile from './profile';
+
+const Tab = createBottomTabNavigator();
 
 export default function TabLayout() {
   return (
-    <Tabs
+    <Tab.Navigator
+      initialRouteName="learn"
       screenOptions={{
         tabBarStyle: { 
-          paddingBottom: 10, // Increase space for the tab bar at the bottom
-          height: 70, // Increase the height of the tab bar
-          paddingTop: 5, // Padding from the top of the tab bar
+          paddingBottom: 10,
+          height: 70,
+          paddingTop: 5,
         },
       }}
     >
-      <Tabs.Screen 
+      <Tab.Screen 
         name='learn' 
+        component={Learn}
         options={{ 
           headerShown: false,
           tabBarIcon: ({ color, size, focused }) => (
@@ -26,8 +33,9 @@ export default function TabLayout() {
           ),
         }} 
       />
-      <Tabs.Screen 
+      <Tab.Screen 
         name='community' 
+        component={Community}
         options={{ 
           headerShown: true,
           tabBarIcon: ({ color, size, focused }) => (
@@ -38,8 +46,9 @@ export default function TabLayout() {
           ),
         }} 
       />
-      <Tabs.Screen 
+      <Tab.Screen 
         name='profile' 
+        component={Profile}
         options={{ 
           headerShown: true,
           tabBarIcon: ({ color, size, focused }) => (
@@ -50,6 +59,6 @@ export default function TabLayout() {
           ),
         }} 
       />
-    </Tabs>
+    </Tab.Navigator>
   );
 }

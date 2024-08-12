@@ -105,10 +105,6 @@ const Learn: React.FC = () => {
     }
   
     setLastCompletionDate(today);
-  
-    updateUserProgress(userId, currentLanguage, currentLevel, lessonKey, true)
-      .then(() => console.log('User progress updated successfully'))
-      .catch((error) => console.error('Error updating user progress:', error));
 
   
     navigation.navigate('LessonScreen', {
@@ -123,8 +119,8 @@ const Learn: React.FC = () => {
     const checkStreak = () => {
       if (lastCompletionDate) {
         const now = new Date();
-        if ((now.getTime() - lastCompletionDate.getTime()) >= 24 * 60 * 60 * 1000) {
-          setStreak(0); // Reset streak if no class completed within 24 hours
+        if ((now.getTime() - lastCompletionDate.getTime()) >= 48 * 60 * 60 * 1000) {
+          setStreak(0); // Reset streak if no class completed within 48 hours
         }
       }
     };
