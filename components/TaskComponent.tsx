@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Animated, Dimensions } from 'react-native';
+import { Video, ResizeMode } from 'expo-av'
 
 interface Task {
   type: 'newSentence' | 'completeSentence' | 'orderSentence';
@@ -89,6 +90,18 @@ const TaskComponent: React.FC<Task> = ({
 
   const renderNewSentenceTask = () => (
     <View>
+      {vidUrl && (
+        <Video
+          source={{ uri: `https://drive.google.com/uc?export=download&id=${vidUrl}` }}
+          style={styles.video}
+          useNativeControls
+          resizeMode={ResizeMode.CONTAIN}
+          shouldPlay
+          onError={(error) => {
+            console.error('Video playback error:', error);
+          }}
+        />
+      )}
       <Text style={styles.title}>{title}</Text>
       <Text style={styles.sentence}>{revealedSentence || sentence}</Text>
       <TouchableOpacity style={styles.nextButton} onPress={handleNextPress}>
@@ -99,6 +112,18 @@ const TaskComponent: React.FC<Task> = ({
 
   const renderCompleteSentenceTask = () => (
     <View>
+      {vidUrl && (
+        <Video
+          source={{ uri: `https://drive.google.com/uc?export=download&id=${vidUrl}` }}
+          style={styles.video}
+          useNativeControls
+          resizeMode={ResizeMode.CONTAIN}
+          shouldPlay
+          onError={(error) => {
+            console.error('Video playback error:', error);
+          }}
+        />
+      )}
       <Text style={styles.title}>{title}</Text>
       <Text style={styles.sentence}>{selectedOption === answer ? revealedSentence : sentence}</Text>
       {options && (
