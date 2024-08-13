@@ -43,14 +43,6 @@
                   },
                   "answer": "some"
                 },
-                "lesson4": {
-                  "type": "newSentence",
-                  "title": "Hey Look, New Sentence!",
-                  "sentence": "some sentence 2",
-                  "vidUrl": "19D3-HYSFcXWRpA4xieA1nbTkOmjjzcXj",
-                  "translate": "translate here 2",
-                  "description": "descreption here 2"
-                },
                 "lesson5": {
                   "type": "completeSentence",
                   "title": "complete the Sentence!",

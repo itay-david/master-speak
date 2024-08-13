@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons'; // Import Ionicons
 import ProgressBar from '../components/ProgressBar';
 import TaskComponent from '../components/TaskComponent';
 import { getLessonDataRef, getUserProgressRef, onValue, updateUserProgress } from './auth/firebaseConfig';
@@ -66,16 +67,15 @@ function LessonScreen({ route, navigation }: any) {
       setCurrentIndex(currentIndex + 1);
     } else {
       setShowSummary(true);
+      setCurrentIndex(currentIndex + 1);
     }
   };
 
   const finishLesson = () => {
     const totalTasks = Object.keys(lessons!).length;
-    // const completeSentenceTasks = Object.values(lessons!).filter(lesson => lesson.type === 'completeSentence').length;
     const successRate = (correctAnswers / totalTasks) * 100;
     
     if (successRate >= 60) {
-      // Only update progress if the user passes the lesson
       updateUserProgress(userId, language, level, lessonKey, true);
     }
     
@@ -93,7 +93,14 @@ function LessonScreen({ route, navigation }: any) {
 
   return (
     <View style={styles.container}>
-      <ProgressBar progress={progress} />
+      <View style={styles.header}>
+        <View style={styles.headerBar}>
+          <ProgressBar progress={progress} />
+        </View>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.closeButton}>
+          <Ionicons name="close" size={24} color="#000" />
+        </TouchableOpacity>
+      </View>
       {!showSummary ? (
         <TaskComponent
           {...lessons[Object.keys(lessons)[currentIndex]]}
@@ -124,6 +131,23 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 10,
+    marginTop: 50,
+    paddingHorizontal: 20,
+  },
+  headerBar: {
+    flex: 1,
+  },
+  closeButton: {
+    borderRadius: 50,
+    paddingRight: 8,
+    paddingLeft: 8,
+    paddingBottom: 20,
   },
   summaryContainer: {
     flex: 1,

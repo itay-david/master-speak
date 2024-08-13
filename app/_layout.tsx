@@ -12,7 +12,7 @@ export default function RootLayout() {
       <Stack.Navigator>
         <Stack.Screen name="auth" options={{ headerShown: false}} component={Auth} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false}} component={TabLayout} />
-        <Stack.Screen name="LessonScreen" component={LessonScreen} />
+        <Stack.Screen name="LessonScreen" component={LessonScreen} options={{ headerShown: false }} />
       </Stack.Navigator>
     </AuthProvider>
   );

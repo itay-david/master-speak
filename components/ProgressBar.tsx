@@ -2,13 +2,13 @@ import React from 'react';
 import { View, StyleSheet } from 'react-native';
 
 interface ProgressBarProps {
-  progress: number; // 0 to 1
+  progress: number; // Value between 0 and 1
 }
 
 const ProgressBar: React.FC<ProgressBarProps> = ({ progress }) => {
   return (
     <View style={styles.container}>
-      <View style={[styles.progressBar, { width: `${progress * 100}%` }]} />
+      <View style={[styles.progress, { width: `${progress * 100}%` }]} />
     </View>
   );
 };
@@ -16,12 +16,12 @@ const ProgressBar: React.FC<ProgressBarProps> = ({ progress }) => {
 const styles = StyleSheet.create({
   container: {
     height: 10,
-    backgroundColor: '#e0e0e0',
+    backgroundColor: '#ddd',
     borderRadius: 5,
     overflow: 'hidden',
     marginBottom: 20,
   },
-  progressBar: {
+  progress: {
     height: '100%',
     backgroundColor: '#4CAF50',
   },
