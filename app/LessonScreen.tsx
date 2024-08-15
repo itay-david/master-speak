@@ -6,7 +6,7 @@ import TaskComponent from '../components/TaskComponent';
 import { getLessonDataRef, getUserProgressRef, onValue, updateUserProgress } from './auth/firebaseConfig';
 
 interface Lesson {
-  type: 'newSentence' | 'completeSentence' | 'orderSentence';
+  type: 'newSentence' | 'completeSentence' | 'orderSentence' | 'trueOrFalse' | 'spellLetters';
   title: string;
   sentence?: string;
   translate?: string;
@@ -14,7 +14,9 @@ interface Lesson {
   revealedSentence?: string;
   options?: { [key: string]: string };
   answer?: string;
+  question: string;
   words?: string[];
+  letters?: string[];
 }
 
 function LessonScreen({ route, navigation }: any) {
@@ -130,7 +132,7 @@ function LessonScreen({ route, navigation }: any) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#fff',
   },
   header: {
     flexDirection: 'row',

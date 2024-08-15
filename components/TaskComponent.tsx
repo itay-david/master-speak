@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Animated, Dimensions } from 'react-native';
-import { Video, ResizeMode } from 'expo-av'
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { Video, ResizeMode } from 'expo-av';
 
 interface Task {
-  type: 'newSentence' | 'completeSentence' | 'orderSentence';
+  type: 'newSentence' | 'completeSentence' | 'orderSentence' | 'trueOrFalse' | 'spellLetters';
   title: string;
   sentence?: string;
   translate?: string;
@@ -16,6 +16,7 @@ interface Task {
   onComplete: (isCorrect: boolean) => void;
   onNextTask: () => void;
   taskKey: string;
+  question: string;
   completed: boolean;
 }
 
@@ -32,9 +33,11 @@ const TaskComponent: React.FC<Task> = ({
   vidUrl,
   onComplete,
   onNextTask,
-  taskKey,
+  question,
   completed,
 }) => {
+  const [selectedLetters, setSelectedLetters] = useState<string[]>([]);
+  const [availableLetters, setAvailableLetters] = useState<string[]>([]);
   const [showCard, setShowCard] = useState(false);
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
@@ -42,10 +45,31 @@ const TaskComponent: React.FC<Task> = ({
   const [availableWords, setAvailableWords] = useState<string[]>([]);
 
   useEffect(() => {
+    if (type === 'spellLetters' && sentence) {
+      setAvailableLetters(sentence.split('').sort(() => Math.random() - 0.5));
+    }
+  }, [type, sentence]);
+
+  useEffect(() => {
     if (type === 'orderSentence' && words) {
       setAvailableWords(words.slice().sort(() => Math.random() - 0.5));
     }
   }, [type, words]);
+
+  const handleLetterPress = (letter: string) => {
+    if (selectedLetters.includes(letter)) {
+      setSelectedLetters(selectedLetters.filter(l => l !== letter));
+    } else {
+      setSelectedLetters([...selectedLetters, letter]);
+    }
+  };
+
+  const handleSpellCheck = () => {
+    const isAnswerCorrect = selectedLetters.join('') === sentence;
+    setIsCorrect(isAnswerCorrect);
+    setShowCard(true);
+    onComplete(isAnswerCorrect);
+  };
 
   const handleOptionPress = (option: string) => {
     if (selectedOption !== null) return;
@@ -59,15 +83,12 @@ const TaskComponent: React.FC<Task> = ({
 
   const handleWordPress = (word: string, isOrdered: boolean) => {
     if (isOrdered) {
-      // Remove the word from orderedWords and add it back to availableWords
       setOrderedWords(orderedWords.filter(w => w !== word));
       setAvailableWords([...availableWords, word]);
     } else {
-      // Add the word to orderedWords and remove it from availableWords
       setOrderedWords([...orderedWords, word]);
       setAvailableWords(availableWords.filter(w => w !== word));
 
-      // Check if the sentence is complete
       if (orderedWords.length + 1 === words?.length) {
         const isAnswerCorrect = [...orderedWords, word].join(' ') === words?.join(' ');
         setIsCorrect(isAnswerCorrect);
@@ -82,14 +103,45 @@ const TaskComponent: React.FC<Task> = ({
     setSelectedOption(null);
     setIsCorrect(null);
     setOrderedWords([]);
+    setSelectedLetters([]);
     if (type === 'orderSentence' && words) {
       setAvailableWords(words.slice().sort(() => Math.random() - 0.5));
     }
     onNextTask();
   };
 
+  const renderSpellLettersTask = () => (
+    <View style={styles.taskContainer}>
+      <Text style={styles.title}>{title}</Text>
+      <View style={styles.spellLettersContainer}>
+        {selectedLetters.map((letter, index) => (
+          <Text key={index} style={styles.spellLetter}>{letter}</Text>
+        ))}
+        {[...Array(sentence!.length - selectedLetters.length)].map((_, index) => (
+          <Text key={`empty-${index}`} style={styles.spellLetter}>_</Text>
+        ))}
+      </View>
+      <View style={styles.availableLettersContainer}>
+        {availableLetters.map((letter, index) => (
+          <TouchableOpacity key={index} onPress={() => handleLetterPress(letter)}>
+            <Text style={[
+              styles.letterButton,
+              selectedLetters.includes(letter) && styles.selectedLetterButton,
+            ]}>
+              {letter}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+      <TouchableOpacity style={styles.nextButton} onPress={handleSpellCheck}>
+        <Text style={styles.nextButtonText}>Check</Text>
+      </TouchableOpacity>
+    </View>
+  );
+
   const renderNewSentenceTask = () => (
-    <View>
+    <View style={styles.taskContainer}>
+      <Text style={styles.title}>{title}</Text>
       {vidUrl && (
         <Video
           source={{ uri: `https://drive.google.com/uc?export=download&id=${vidUrl}` }}
@@ -97,13 +149,11 @@ const TaskComponent: React.FC<Task> = ({
           useNativeControls
           resizeMode={ResizeMode.CONTAIN}
           shouldPlay
-          onError={(error) => {
-            console.error('Video playback error:', error);
-          }}
+          onError={(error) => console.error('Video playback error:', error)}
         />
       )}
-      <Text style={styles.title}>{title}</Text>
-      <Text style={styles.sentence}>{revealedSentence || sentence}</Text>
+      <Text style={styles.sentence}>{sentence}</Text>
+      <Text style={styles.translate}>{translate}</Text>
       <TouchableOpacity style={styles.nextButton} onPress={handleNextPress}>
         <Text style={styles.nextButtonText}>Next</Text>
       </TouchableOpacity>
@@ -111,7 +161,7 @@ const TaskComponent: React.FC<Task> = ({
   );
 
   const renderCompleteSentenceTask = () => (
-    <View>
+    <View style={styles.taskContainer}>
       {vidUrl && (
         <Video
           source={{ uri: `https://drive.google.com/uc?export=download&id=${vidUrl}` }}
@@ -119,9 +169,7 @@ const TaskComponent: React.FC<Task> = ({
           useNativeControls
           resizeMode={ResizeMode.CONTAIN}
           shouldPlay
-          onError={(error) => {
-            console.error('Video playback error:', error);
-          }}
+          onError={(error) => console.error('Video playback error:', error)}
         />
       )}
       <Text style={styles.title}>{title}</Text>
@@ -150,8 +198,47 @@ const TaskComponent: React.FC<Task> = ({
     </View>
   );
 
+  const renderTrueOrFalseTask = () => (
+    <View style={styles.taskContainer}>
+      <Text style={styles.title}>{title}</Text>
+      {vidUrl && (
+        <Video
+          source={{ uri: `https://drive.google.com/uc?export=download&id=${vidUrl}` }}
+          style={styles.video}
+          useNativeControls
+          resizeMode={ResizeMode.CONTAIN}
+          shouldPlay
+          onError={(error) => console.error('Video playback error:', error)}
+        />
+      )}
+      <Text style={styles.sentence}>{sentence}</Text>
+      <Text style={styles.question}>{question}</Text>
+      {options && (
+        <View style={styles.optionsContainer}>
+          {Object.entries(options).map(([key, option]) => (
+            <TouchableOpacity
+              key={key}
+              style={[
+                styles.optionButton,
+                selectedOption === option
+                  ? option === answer
+                    ? styles.correctOption
+                    : styles.incorrectOption
+                  : {},
+              ]}
+              onPress={() => handleOptionPress(option)}
+              disabled={selectedOption !== null}
+            >
+              <Text style={styles.optionText}>{option}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      )}
+    </View>
+  );
+
   const renderOrderSentenceTask = () => (
-    <View style={styles.orderSentenceContainer}>
+    <View style={styles.taskContainer}>
       <Text style={styles.title}>{title}</Text>
       <View style={styles.sentenceContainer}>
         {orderedWords.map((word, index) => (
@@ -182,92 +269,127 @@ const TaskComponent: React.FC<Task> = ({
     </View>
   );
 
-  const renderTask = () => {
-    switch (type) {
-      case 'newSentence':
-        return renderNewSentenceTask();
-      case 'completeSentence':
-        return renderCompleteSentenceTask();
-      case 'orderSentence':
-        return renderOrderSentenceTask();
-      default:
-        return null;
-    }
-  };
+  const renderFeedbackCard = () => (
+    <View style={[
+      styles.card,
+      isCorrect ? styles.correctCard : styles.incorrectCard,]}>
+      <Text style={styles.cardText}>
+        {isCorrect === null ? '' : isCorrect ? 'תשובה נכונה!' : 'תשובה שגויה'}
+      </Text>
+      <Text>{description}</Text>
+      <TouchableOpacity style={styles.nextButton} onPress={handleNextPress}>
+        <Text style={styles.nextButtonText}>Next</Text>
+      </TouchableOpacity>
+    </View>
+  );
 
   return (
     <View style={styles.container}>
-      {renderTask()}
-      {showCard && (
-        <Animated.View
-          style={[
-            styles.card,
-            isCorrect ? styles.correctCard : styles.incorrectCard,
-          ]}
-        >
-          <Text style={styles.resultText}>
-            {isCorrect ? 'Correct!' : 'Incorrect'}
-          </Text>
-          <Text style={styles.description}>{description}</Text>
-          <TouchableOpacity
-            style={[
-              styles.nextButton,
-              !isCorrect ? styles.incorrectNextButton : {},
-            ]}
-            onPress={handleNextPress}
-          >
-            <Text style={styles.nextButtonText}>Next</Text>
-          </TouchableOpacity>
-        </Animated.View>
-      )}
+      {type === 'newSentence' && renderNewSentenceTask()}
+      {type === 'completeSentence' && renderCompleteSentenceTask()}
+      {type === 'trueOrFalse' && renderTrueOrFalseTask()}
+      {type === 'spellLetters' && renderSpellLettersTask()}
+      {type === 'orderSentence' && renderOrderSentenceTask()}
+      {showCard && renderFeedbackCard()}
     </View>
   );
 };
 
-const { width, height } = Dimensions.get('window');
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: '#fff',
+    padding: 16,
+  },
+  taskContainer: {
+    marginBottom: 16,
   },
   title: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 16,
-    textAlign: 'center',
+    color: '#333',
   },
   sentence: {
+    fontSize: 20,
+    marginBottom: 8,
+    color: '#333',
+  },
+  translate: {
     fontSize: 18,
-    marginBottom: 24,
-    textAlign: 'center',
+    color: '#888',
+    marginBottom: 16,
+  },
+  video: {
+    width: '100%',
+    height: 200,
+    marginBottom: 16,
   },
   optionsContainer: {
+    flexDirection: 'column',
     marginTop: 16,
+  },
+  optionButton: {
+    backgroundColor: '#ddd',
+    padding: 16,
+    marginBottom: 8,
+    borderRadius: 8,
+  },
+  optionText: {
+    fontSize: 18,
+    color: '#333',
+  },
+  correctOption: {
+    backgroundColor: '#C8E6C9',
+  },
+  incorrectOption: {
+    backgroundColor: '#FFCDD2',
+  },
+  spellLettersContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginBottom: 16,
+  },
+  spellLetter: {
+    fontSize: 28,
+    marginHorizontal: 4,
+  },
+  availableLettersContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'center',
   },
-  optionButton: {
-    backgroundColor: '#E0E0E0',
-    paddingVertical: 12,
-    paddingHorizontal: 24,
+  letterButton: {
+    fontSize: 24,
+    margin: 4,
+    padding: 8,
+    backgroundColor: '#ddd',
     borderRadius: 8,
-    marginVertical: 8,
-    marginHorizontal: 8,
   },
-  optionText: {
-    color: '#000',
-    fontWeight: 'bold',
-    fontSize: 16,
+  selectedLetterButton: {
+    backgroundColor: '#C8E6C9',
   },
-  correctOption: {
-    backgroundColor: '#4CAF50',
+  nextButton: {
+    backgroundColor: '#0066CC',
+    padding: 12,
+    borderRadius: 8,
+    marginTop: 16,
+    alignItems: 'center',
   },
-  incorrectOption: {
-    backgroundColor: '#F44336',
+  nextButtonText: {
+    fontSize: 18,
+    color: '#fff',
+  },
+  cardContainer: {
+    backgroundColor: '#fff',
+    padding: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 16,
+  },
+  cardText: {
+    fontSize: 20,
+    marginBottom: 8,
   },
   card: {
     position: 'absolute',
@@ -292,95 +414,48 @@ const styles = StyleSheet.create({
   incorrectCard: {
     backgroundColor: '#FFCDD2',
   },
-  resultText: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  description: {
-    fontSize: 16,
-    textAlign: 'center',
-    marginBottom: 16,
-  },
-  nextButton: {
-    backgroundColor: '#4CAF50',
-    paddingVertical: 12,
-    paddingHorizontal: 30,
-    borderRadius: 25,
-    alignSelf: 'center',
-    marginTop: 16,
-  },
-  incorrectNextButton: {
-    backgroundColor: '#F44336',
-  },
-  nextButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  orderSentenceContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-  },
   sentenceContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginVertical: 20,
-    minHeight: 50,
+    marginBottom: 16,
   },
   orderedWordContainer: {
-    backgroundColor: '#E3F2FD',
+    backgroundColor: '#C8E6C9',
+    padding: 8,
     borderRadius: 8,
-    padding: 10,
-    margin: 5,
-    minWidth: 60,
-    alignItems: 'center',
+    marginRight: 4,
+    marginBottom: 8,
   },
   orderedWord: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#1565C0',
   },
   emptyWordContainer: {
-    backgroundColor: '#EEEEEE',
+    backgroundColor: '#ddd',
+    padding: 8,
     borderRadius: 8,
-    padding: 10,
-    margin: 5,
-    minWidth: 60,
-    height: 44,
+    marginRight: 4,
+    marginBottom: 8,
+    width: 50,
   },
   instructionText: {
     fontSize: 16,
-    color: '#757575',
-    marginBottom: 10,
+    color: '#666',
+    marginBottom: 8,
   },
   availableWordsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    justifyContent: 'center',
-    marginTop: 20,
   },
   wordButton: {
-    backgroundColor: '#2196F3',
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 25,
-    margin: 5,
+    backgroundColor: '#ddd',
+    padding: 8,
+    borderRadius: 8,
+    marginRight: 4,
+    marginBottom: 8,
   },
   wordButtonText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-  },
-  video: {
-    width: width * 0.8,
-    height: height * 0.4,
-    marginBottom: 20,
+    fontSize: 18,
+    color: '#333',
   },
 });
 

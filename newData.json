@@ -9,11 +9,81 @@
               "lessons": {
                 "lesson1": {
                   "type": "newSentence",
-                  "title": "Hey Look, New Sentence!",
-                  "sentence": "some sentence",
+                  "title": "תראו, משהו חדש!",
+                  "sentence": "¡Hola!",
+                  "translate": "היי!",
                   "vidUrl": "19D3-HYSFcXWRpA4xieA1nbTkOmjjzcXj",
-                  "translate": "translate here",
                   "description": "descreption here"
+                },
+                "lesson2": {
+                  "type": "trueOrFalse",
+                  "title": "נכון או לא נכון?",
+                  "sentence": "¡Hola!",
+                  "question": "זה אומר \"היי\"",
+                  "vidUrl": "19D3-HYSFcXWRpA4xieA1nbTkOmjjzcXj",
+                  "translate": "היי!",
+                  "description": "מאייתים את זה עם \"h\" בהתחלה למרות שלא הוגים את זה.",
+                  "options": {
+                    "option1": "נכון",
+                    "option2": "לא נכון"
+                  },
+                  "answer": "נכון"
+                },
+                "lesson3": {
+                  "type": "newSentence",
+                  "title": "תראו, משהו חדש!",
+                  "sentence": "¡Buenos dias!",
+                  "translate": "בוקר טוב!",
+                  "vidUrl": "19D3-HYSFcXWRpA4xieA1nbTkOmjjzcXj",
+                  "description": "descreption here"
+                },
+                "lesson4": {
+                  "type": "completeSentence",
+                  "title": "השלם את המשפט.",
+                  "sentence": "¡Buenos _____!",
+                  "revealedSentence": "¡Buenos dias!",
+                  "vidUrl": "19D3-HYSFcXWRpA4xieA1nbTkOmjjzcXj",
+                  "translate": "translate here 5",
+                  "description": "אנחנו אומרים \"¡Buenos dias!\" בבוקר.",
+                  "options": {
+                    "option1": "dias",
+                    "option2": "dio"
+                  },
+                  "answer": "dias"
+                },
+                "lesson5": {
+                  "type": "newSentence",
+                  "title": "תראו, משהו חדש!",
+                  "sentence": "¡Adios!",
+                  "translate": "להתראות!",
+                  "vidUrl": "19D3-HYSFcXWRpA4xieA1nbTkOmjjzcXj",
+                  "description": "descreption here"
+                },
+                "lesson6": {
+                  "type": "completeSentence",
+                  "title": "השלם את המשפט.",
+                  "sentence": "¡_____!",
+                  "revealedSentence": "¡Adios!",
+                  "vidUrl": "19D3-HYSFcXWRpA4xieA1nbTkOmjjzcXj",
+                  "translate": "translate here 5",
+                  "description": "שמתם לב שמשתמשים בסימן קריאה גם בהתחלה (¡) וגם בסוף (!) ?",
+                  "options": {
+                    "option1": "Adios",
+                    "option2": "Ados"
+                  },
+                  "answer": "Adios"
+                }
+              } 
+            },
+            "class2": {
+              "title": "להיות ממכם",
+              "lessons": {
+                "lesson1": {
+                  "type": "spellLetters",
+                  "title": "Spell the Missing Letters",
+                  "sentence": "H_ll_ W_rld",
+                  "availableLetters": ["A", "E", "I", "O", "U", "R", "D"],
+                  "correctLetters": ["E", "O", "R"]
                 },
                 "lesson2": {
                   "type": "completeSentence",
@@ -64,10 +134,7 @@
                   "translate": "I am not stressed.",
                   "description": "This sentence uses the negative form 'ne ... pas' around the verb 'suis' (am)."
                 }
-              } 
-            },
-            "class2": {
-              "title": "להיות ממכם"
+              }
             },
             "class3": {
               "title": "Greetings and Introductions",
