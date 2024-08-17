@@ -5,7 +5,140 @@
         "A1": {
           "classes": {
             "class1": {
-              "title": "Hello!",
+              "title": "שלום",
+              "lessons": {
+                "lesson1": {
+                  "type": "newSentence",
+                  "title": "תראו, משהו חדש!",
+                  "vidUrl": "19D3-HYSFcXWRpA4xieA1nbTkOmjjzcXj",
+                  "imageUrl": "https://wallpapers.com/images/hd/1920x1080-aesthetic-glrfk0ntspz3tvxg.jpg",
+                  "sentence": "¡Hola!",
+                  "translate": "היי!"
+                },
+                "lesson2": {
+                  "type": "trueOrFalse",
+                  "title": "נכון או לא נכון?",
+                  "vidUrl": "19D3-HYSFcXWRpA4xieA1nbTkOmjjzcXj",
+                  "imageUrl": "https://wallpapers.com/images/hd/1920x1080-aesthetic-glrfk0ntspz3tvxg.jpg",
+                  "sentence": "¡Hola!",
+                  "question": "זה אומר \"היי\"",
+                  "options": {
+                    "option1": "נכון",
+                    "option2": "לא נכון"
+                  },
+                  "answer": "נכון",
+                  "description": "מאייתים את זה עם \"h\" בהתחלה למרות שלא הוגים את זה."
+                },
+                "lesson3": {
+                  "type": "newSentence",
+                  "title": "תראו, משהו חדש!",
+                  "vidUrl": "19D3-HYSFcXWRpA4xieA1nbTkOmjjzcXj",
+                  "imageUrl": "https://wallpapers.com/images/hd/1920x1080-aesthetic-glrfk0ntspz3tvxg.jpg",
+                  "sentence": "¡Buenos dias!",
+                  "translate": "בוקר טוב!"
+                },
+                "lesson4": {
+                  "type": "completeSentence",
+                  "title": "השלם את המשפט.",
+                  "vidUrl" :"19D3-HYSFcXWRpA4xieA1nbTkOmjjzcXj",
+                  "imageUrl": "https://wallpapers.com/images/hd/1920x1080-aesthetic-glrfk0ntspz3tvxg.jpg",
+                  "sentence": "¡Buenos _____!",
+                  "revealedSentence": "¡Buenos dias!",
+                  "options": {
+                    "option1": "dias",
+                    "option2": "dio"
+                  },
+                  "answer": "dias",
+                  "description": "אנחנו אומרים \"¡Buenos dias!\" בבוקר."
+                },
+                "lesson5": {
+                  "type": "newSentence",
+                  "title": "תראו, משהו חדש!",
+                  "vidUrl": "19D3-HYSFcXWRpA4xieA1nbTkOmjjzcXj",
+                  "imageUrl": "https://wallpapers.com/images/hd/1920x1080-aesthetic-glrfk0ntspz3tvxg.jpg",
+                  "sentence": "¡Adios!",
+                  "translate": "להתראות!"
+                },
+                "lesson6": {
+                  "type": "completeSentence",
+                  "title": "השלם את המשפט.",
+                  "vidUrl" :"19D3-HYSFcXWRpA4xieA1nbTkOmjjzcXj",
+                  "imageUrl": "https://wallpapers.com/images/hd/1920x1080-aesthetic-glrfk0ntspz3tvxg.jpg",
+                  "sentence": "¡_____!",
+                  "revealedSentence": "¡Adios!",
+                  "options": {
+                    "option1": "Adios",
+                    "option2": "Ados"
+                  },
+                  "answer": "Adios",
+                  "description": "שמתם לב שמשתמשים בסימן קריאה גם בהתחלה (¡) וגם בסוף (!) ?"
+                }
+              }
+            },
+            "class2": {
+              "title": "להיות ממכם",
+              "lessons": {
+                "lesson1": {
+                  "type": "newSentence",
+                  "title": "תראו, משהו חדש!",
+                  "vidUrl": "19D3-HYSFcXWRpA4xieA1nbTkOmjjzcXj",
+                  "imageUrl": "https://wallpapers.com/images/hd/1920x1080-aesthetic-glrfk0ntspz3tvxg.jpg",
+                  "sentence": "¡Hola!",
+                  "translate": "היי!"
+                },
+                "lesson2": {
+                  "type": "completeSentence",
+                  "title": "complete the Sentence!",
+                  "sentence": "blank sentence",
+                  "revealedSentence": "some sentence",
+                  "vidUrl": "19D3-HYSFcXWRpA4xieA1nbTkOmjjzcXj",
+                  "translate": "translate here",
+                  "imageUrl": "https://wallpapers.com/images/hd/1920x1080-aesthetic-glrfk0ntspz3tvxg.jpg",
+                  "description": "descreption here",
+                  "options": {
+                    "option1": "some",
+                    "option2": "other"
+                  },
+                  "answer": "some"
+                },
+                "lesson3": {
+                  "type": "completeSentence",
+                  "title": "complete the Sentence!",
+                  "sentence": "blank sentence",
+                  "revealedSentence": "some sentence",
+                  "vidUrl": "19D3-HYSFcXWRpA4xieA1nbTkOmjjzcXj",
+                  "imageUrl": "https://wallpapers.com/images/hd/1920x1080-aesthetic-glrfk0ntspz3tvxg.jpg",
+                  "translate": "translate here",
+                  "description": "descreption here",
+                  "options": {
+                    "option1": "some",
+                    "option2": "other"
+                  },
+                  "answer": "some"
+                },
+                "lesson5": {
+                  "type": "completeSentence",
+                  "title": "complete the Sentence!",
+                  "sentence": "blank sentence 5",
+                  "revealedSentence": "some sentence 5",
+                  "vidUrl": "19D3-HYSFcXWRpA4xieA1nbTkOmjjzcXj",
+                  "imageUrl": "https://wallpapers.com/images/hd/1920x1080-aesthetic-glrfk0ntspz3tvxg.jpg",
+                  "translate": "translate here 5",
+                  "description": "descreption here 5",
+                  "options": {
+                    "option1": "some",
+                    "option2": "other"
+                  },
+                  "answer": "some"
+                }
+              }
+            },
+            "class3": {
+              "title": "Greetings and Introductions",
+              "nextLevel": "חלק 2"
+            },
+            "class4": {
+              "title": "Numbers and Dates",
               "lessons": {
                 "lesson1": {
                   "type": "newSentence",
@@ -72,76 +205,20 @@
                     "option2": "Ados"
                   },
                   "answer": "Adios"
-                }
-              } 
-            },
-            "class2": {
-              "title": "להיות ממכם",
-              "lessons": {
-                "lesson1": {
-                  "type": "spellLetters",
-                  "title": "Spell the Missing Letters",
-                  "sentence": "H_ll_ W_rld",
-                  "availableLetters": ["A", "E", "I", "O", "U", "R", "D"],
-                  "correctLetters": ["E", "O", "R"]
                 },
-                "lesson2": {
-                  "type": "completeSentence",
-                  "title": "complete the Sentence!",
-                  "sentence": "blank sentence",
-                  "revealedSentence": "some sentence",
-                  "vidUrl": "19D3-HYSFcXWRpA4xieA1nbTkOmjjzcXj",
-                  "translate": "translate here",
-                  "description": "descreption here",
-                  "options": {
-                    "option1": "some",
-                    "option2": "other"
+                "lesson7": {
+                  "type": "matchThePairs",
+                  "title": "Match the Spanish words with their English translations",
+                  "pairs": {
+                    "Hola": "Hello",
+                    "Adiós": "Goodbye",
+                    "Gracias": "Thank you",
+                    "Por favor": "Please"
                   },
-                  "answer": "some"
-                },
-                "lesson3": {
-                  "type": "completeSentence",
-                  "title": "complete the Sentence!",
-                  "sentence": "blank sentence",
-                  "revealedSentence": "some sentence",
-                  "vidUrl": "19D3-HYSFcXWRpA4xieA1nbTkOmjjzcXj",
-                  "translate": "translate here",
-                  "description": "descreption here",
-                  "options": {
-                    "option1": "some",
-                    "option2": "other"
-                  },
-                  "answer": "some"
-                },
-                "lesson5": {
-                  "type": "completeSentence",
-                  "title": "complete the Sentence!",
-                  "sentence": "blank sentence 5",
-                  "revealedSentence": "some sentence 5",
-                  "vidUrl": "19D3-HYSFcXWRpA4xieA1nbTkOmjjzcXj",
-                  "translate": "translate here 5",
-                  "description": "descreption here 5",
-                  "options": {
-                    "option1": "some",
-                    "option2": "other"
-                  },
-                  "answer": "some"
-                },
-                "lesson6": {
-                  "type": "orderSentence",
-                  "title": "Put the words in order.",
-                  "words": ["Je", "ne", "suis", "pas", "stressé."],
-                  "translate": "I am not stressed.",
-                  "description": "This sentence uses the negative form 'ne ... pas' around the verb 'suis' (am)."
+                  "vidUrl": "your_video_url_here",
+                  "description": "Match the Spanish words on the left with their English translations on the right."
                 }
               }
-            },
-            "class3": {
-              "title": "Greetings and Introductions",
-              "nextLevel": "חלק 2"
-            },
-            "class4": {
-              "title": "Numbers and Dates"
             },
             "class5": {
               "title": "Hello!"

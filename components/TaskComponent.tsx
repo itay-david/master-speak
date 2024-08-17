@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Button, Image } from 'react-native';
 import { Video, ResizeMode } from 'expo-av';
+import * as Speech from 'expo-speech';
+
+
 
 interface Task {
-  type: 'newSentence' | 'completeSentence' | 'orderSentence' | 'trueOrFalse' | 'spellLetters';
+  type: 'newSentence' | 'completeSentence' | 'orderSentence' | 'trueOrFalse' | 'spellLetters' | 'matchThePairs';
   title: string;
   sentence?: string;
   translate?: string;
@@ -18,6 +21,9 @@ interface Task {
   taskKey: string;
   question: string;
   completed: boolean;
+  pairs?: { [key: string]: string };
+  language: string;
+  imageUrl: string;
 }
 
 const TaskComponent: React.FC<Task> = ({
@@ -35,6 +41,9 @@ const TaskComponent: React.FC<Task> = ({
   onNextTask,
   question,
   completed,
+  pairs,
+  language,
+  imageUrl
 }) => {
   const [selectedLetters, setSelectedLetters] = useState<string[]>([]);
   const [availableLetters, setAvailableLetters] = useState<string[]>([]);
@@ -43,18 +52,43 @@ const TaskComponent: React.FC<Task> = ({
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const [orderedWords, setOrderedWords] = useState<string[]>([]);
   const [availableWords, setAvailableWords] = useState<string[]>([]);
+  const [matchedPairs, setMatchedPairs] = useState<{ [key: string]: string }>({});
+  const [selectedContainer, setSelectedContainer] = useState<string | null>(null);
+  const [taskCompleted, setTaskCompleted] = useState(false);
+
+  
+  const getLanguageCode = (lang: string): string => {
+    switch (lang) {
+      case 'spanish':
+        return 'en';
+      case 'french':
+        return 'fr';
+      case 'german':
+        return 'de';
+      case 'english':
+        return 'en';
+      default:
+        return 'en';
+    }
+  };
+
+  const speak = (text: string) => {
+    Speech.speak(text, {
+      language: getLanguageCode(language),
+      pitch: 1.0, // Adjust pitch if needed
+      rate: 1,  // Adjust rate if needed
+    });
+  };
+
 
   useEffect(() => {
     if (type === 'spellLetters' && sentence) {
       setAvailableLetters(sentence.split('').sort(() => Math.random() - 0.5));
     }
-  }, [type, sentence]);
-
-  useEffect(() => {
     if (type === 'orderSentence' && words) {
       setAvailableWords(words.slice().sort(() => Math.random() - 0.5));
     }
-  }, [type, words]);
+  }, [type, sentence, words]);
 
   const handleLetterPress = (letter: string) => {
     if (selectedLetters.includes(letter)) {
@@ -98,17 +132,45 @@ const TaskComponent: React.FC<Task> = ({
     }
   };
 
+  const handlePairSelection = (item: string) => {
+    if (taskCompleted) return;
+
+    const availableKeys = Object.keys(pairs!).filter(key => !matchedPairs[key]);
+    if (availableKeys.length > 0) {
+      const newKey = availableKeys[0];
+      const newMatchedPairs = { ...matchedPairs, [newKey]: item };
+      setMatchedPairs(newMatchedPairs);
+
+      if (Object.keys(newMatchedPairs).length === Object.keys(pairs!).length) {
+        const isAllCorrect = Object.entries(newMatchedPairs).every(
+          ([key, value]) => pairs![key] === value
+        );
+        setTaskCompleted(true);
+        setIsCorrect(isAllCorrect);
+        onComplete(isAllCorrect);
+        setShowCard(true);
+      }
+    }
+  };
+
+  const handleContainerSelection = (key: string) => {
+    setSelectedContainer(key);
+  };
+
   const handleNextPress = () => {
     setShowCard(false);
     setSelectedOption(null);
     setIsCorrect(null);
     setOrderedWords([]);
     setSelectedLetters([]);
+    setMatchedPairs({});
+    setSelectedContainer(null);
     if (type === 'orderSentence' && words) {
       setAvailableWords(words.slice().sort(() => Math.random() - 0.5));
     }
     onNextTask();
   };
+
 
   const renderSpellLettersTask = () => (
     <View style={styles.taskContainer}>
@@ -142,7 +204,7 @@ const TaskComponent: React.FC<Task> = ({
   const renderNewSentenceTask = () => (
     <View style={styles.taskContainer}>
       <Text style={styles.title}>{title}</Text>
-      {vidUrl && (
+      {/* {vidUrl && (
         <Video
           source={{ uri: `https://drive.google.com/uc?export=download&id=${vidUrl}` }}
           style={styles.video}
@@ -151,18 +213,26 @@ const TaskComponent: React.FC<Task> = ({
           shouldPlay
           onError={(error) => console.error('Video playback error:', error)}
         />
-      )}
+      )} */}
+      
+
+      <TouchableOpacity onPress={() => speak({sentence}.sentence, getLanguageCode(language))}>
+        <Image
+          style={styles.video}
+          source={{
+            uri: `${imageUrl}`,
+          }}
+        />
+      </TouchableOpacity>
       <Text style={styles.sentence}>{sentence}</Text>
       <Text style={styles.translate}>{translate}</Text>
-      <TouchableOpacity style={styles.nextButton} onPress={handleNextPress}>
-        <Text style={styles.nextButtonText}>Next</Text>
-      </TouchableOpacity>
     </View>
   );
 
   const renderCompleteSentenceTask = () => (
     <View style={styles.taskContainer}>
-      {vidUrl && (
+      <Text style={styles.title}>{title}</Text>
+      {/* {vidUrl && (
         <Video
           source={{ uri: `https://drive.google.com/uc?export=download&id=${vidUrl}` }}
           style={styles.video}
@@ -171,9 +241,17 @@ const TaskComponent: React.FC<Task> = ({
           shouldPlay
           onError={(error) => console.error('Video playback error:', error)}
         />
-      )}
-      <Text style={styles.title}>{title}</Text>
-      <Text style={styles.sentence}>{selectedOption === answer ? revealedSentence : sentence}</Text>
+      )} */}
+
+      <TouchableOpacity onPress={() => speak({revealedSentence}.revealedSentence, getLanguageCode(language))}>
+        <Image
+          style={styles.video}
+          source={{
+            uri: `${imageUrl}`,
+          }}
+        />
+      </TouchableOpacity>
+      <Text style={selectedOption === answer ? styles.revealedSentence : styles.sentence}>{selectedOption === answer ? revealedSentence : sentence}</Text>
       {options && (
         <View style={styles.optionsContainer}>
           {Object.entries(options).map(([key, option]) => (
@@ -201,16 +279,25 @@ const TaskComponent: React.FC<Task> = ({
   const renderTrueOrFalseTask = () => (
     <View style={styles.taskContainer}>
       <Text style={styles.title}>{title}</Text>
-      {vidUrl && (
+      {/* {vidUrl && (
         <Video
           source={{ uri: `https://drive.google.com/uc?export=download&id=${vidUrl}` }}
           style={styles.video}
           useNativeControls
           resizeMode={ResizeMode.CONTAIN}
-          shouldPlay
+          shouldPlay`
           onError={(error) => console.error('Video playback error:', error)}
         />
-      )}
+      )} */}
+
+    <TouchableOpacity onPress={() => speak({sentence}.sentence, getLanguageCode(language))}>
+        <Image
+          style={styles.video}
+          source={{
+            uri: `${imageUrl}`,
+          }}
+        />
+      </TouchableOpacity>
       <Text style={styles.sentence}>{sentence}</Text>
       <Text style={styles.question}>{question}</Text>
       {options && (
@@ -269,19 +356,79 @@ const TaskComponent: React.FC<Task> = ({
     </View>
   );
 
+  const renderMatchThePairsTask = () => (
+    <ScrollView contentContainerStyle={styles.taskContainer}>
+      <Text style={styles.title}>{title}</Text>
+      <View style={styles.pairsContainer}>
+        {Object.keys(pairs!).map((key) => (
+          <View
+            key={`container-${key}`}
+            style={[
+              styles.pairContainer,
+              taskCompleted && (
+                matchedPairs[key] === pairs![key] 
+                  ? styles.correctPairContainer 
+                  : styles.incorrectPairContainer
+              ),
+            ]}
+          >
+            <Text style={styles.pairContainerText}>{key}</Text>
+            {matchedPairs[key] && (
+              <Text style={[
+                styles.matchedPairText,
+                taskCompleted && (
+                  matchedPairs[key] === pairs![key]
+                    ? styles.correctMatchText
+                    : styles.incorrectMatchText
+                ),
+              ]}>
+                {matchedPairs[key]}
+              </Text>
+            )}
+          </View>
+        ))}
+      </View>
+      <View style={styles.pairsOptionsContainer}>
+        {Object.values(pairs!).map((value) => (
+          <TouchableOpacity
+            key={`value-${value}`}
+            style={[
+              styles.pairOption,
+              Object.values(matchedPairs).includes(value) && styles.matchedPairOption,
+            ]}
+            onPress={() => handlePairSelection(value)}
+            disabled={Object.values(matchedPairs).includes(value) || taskCompleted}
+          >
+            <Text style={styles.pairOptionText}>{value}</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+    </ScrollView>
+  );
+
+  const renderNextButton = () => (
+    <View style={styles.nextButtonFree}>
+      <TouchableOpacity style={styles.nextButton} onPress={handleNextPress}>
+        <Text style={styles.nextButtonText}>הבא</Text>
+      </TouchableOpacity>
+    </View>
+  );
+
   const renderFeedbackCard = () => (
     <View style={[
       styles.card,
-      isCorrect ? styles.correctCard : styles.incorrectCard,]}>
+      isCorrect ? styles.correctCard : styles.incorrectCard,
+    ]}>
       <Text style={styles.cardText}>
         {isCorrect === null ? '' : isCorrect ? 'תשובה נכונה!' : 'תשובה שגויה'}
       </Text>
       <Text>{description}</Text>
       <TouchableOpacity style={styles.nextButton} onPress={handleNextPress}>
-        <Text style={styles.nextButtonText}>Next</Text>
+        <Text style={styles.nextButtonText}>הבא</Text>
       </TouchableOpacity>
     </View>
   );
+
 
   return (
     <View style={styles.container}>
@@ -290,7 +437,9 @@ const TaskComponent: React.FC<Task> = ({
       {type === 'trueOrFalse' && renderTrueOrFalseTask()}
       {type === 'spellLetters' && renderSpellLettersTask()}
       {type === 'orderSentence' && renderOrderSentenceTask()}
+      {type === 'matchThePairs' && renderMatchThePairsTask()}
       {showCard && renderFeedbackCard()}
+      {type === 'newSentence' && renderNextButton()}
     </View>
   );
 };
@@ -298,25 +447,34 @@ const TaskComponent: React.FC<Task> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#f3faff',
     padding: 16,
   },
   taskContainer: {
-    marginBottom: 16,
+    marginHorizontal: 10
   },
   title: {
-    fontSize: 24,
+    fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 16,
-    color: '#333',
+    color: '#068cde',
   },
   sentence: {
-    fontSize: 20,
+    fontSize: 24,
     marginBottom: 8,
     color: '#333',
   },
+  revealedSentence: {
+    fontSize: 24,
+    marginBottom: 8,
+    color: '#4CAF50',
+    fontWeight: '600'
+  },
+  question: {
+    fontSize: 20
+  },
   translate: {
-    fontSize: 18,
+    fontSize: 20,
     color: '#888',
     marginBottom: 16,
   },
@@ -324,6 +482,14 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 200,
     marginBottom: 16,
+  },
+  nextButtonFree: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    padding: 20,
+    marginBottom: 10
   },
   optionsContainer: {
     flexDirection: 'column',
@@ -470,6 +636,58 @@ const styles = StyleSheet.create({
   wordButtonText: {
     fontSize: 16,
     fontWeight: 'bold',
+    color: '#FFFFFF',
+  },
+  pairsContainer: {
+    marginBottom: 20,
+  },
+  pairContainer: {
+    backgroundColor: '#E3F2FD',
+    borderRadius: 8,
+    padding: 10,
+    marginBottom: 10,
+    minHeight: 50,
+    justifyContent: 'center',
+  },
+  correctPairContainer: {
+    backgroundColor: '#C8E6C9',
+  },
+  incorrectPairContainer: {
+    backgroundColor: '#FFCDD2',
+  },
+  pairContainerText: {
+    fontSize: 18,
+    color: '#1565C0',
+  },
+  matchedPairText: {
+    fontSize: 16,
+    color: '#4CAF50',
+    marginTop: 5,
+  },
+  correctMatchText: {
+    color: '#2E7D32',
+  },
+  incorrectMatchText: {
+    color: '#C62828',
+  },
+  pairsOptionsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+  },
+  pairOption: {
+    backgroundColor: '#2196F3',
+    borderRadius: 25,
+    padding: 10,
+    margin: 5,
+    minWidth: 80,
+    alignItems: 'center',
+  },
+  matchedPairOption: {
+    backgroundColor: '#BDBDBD',
+  },
+  pairOptionText: {
+    fontSize: 16,
     color: '#FFFFFF',
   },
 });

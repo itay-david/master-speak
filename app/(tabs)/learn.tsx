@@ -19,12 +19,15 @@ interface LessonItemProps {
 
 const LessonItem: React.FC<LessonItemProps> = ({ title, completed, onPress, nextLevel }) => {
   return (
-    <View>
-      <TouchableOpacity onPress={onPress} style={styles.lessonItem}>
+    <View style={styles.fullItem}>
+      <TouchableOpacity onPress={onPress} style={completed ? styles.lessonComplete : styles.lessonItem}>
         <Text style={styles.lessonTitle}>{title}</Text>
         {completed && <Ionicons name="checkmark-circle" size={24} color="green" />}
       </TouchableOpacity>
+      <View style={styles.sideLesson}></View>
+      
       {nextLevel ? <Text style={styles.nextLevelText}>{nextLevel}</Text> : ''}
+      
     </View>
   );
 };
@@ -49,6 +52,7 @@ const Learn: React.FC = () => {
     english: 'us',
   };
   const levels = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
+
 
   useEffect(() => {
     const auth = getAuth();
@@ -154,75 +158,86 @@ const Learn: React.FC = () => {
     return userProgress?.[currentLanguage]?.[currentLevel]?.[lessonKey]?.completed || false;
   };
 
+  const handleBackgroundPress = () => {
+    if (dropdownVisible) {
+      setDropdownVisible(false);
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" />
-      <View style={styles.topBar}>
-        <View style={styles.flagArrowContainer}>
-          <TouchableOpacity style={styles.flagButton} onPress={() => setDropdownVisible(!dropdownVisible)}>
-            <CountryFlag style={styles.flagEmoji} isoCode={languages[currentLanguage]} size={20} />
-          </TouchableOpacity>
-          <Ionicons name="chevron-down" size={16} color="black" style={styles.arrowIcon} />
-        </View>
-        <View style={styles.statsContainer}>
-          <View style={styles.streakContainer}>
-            <Text style={styles.streakEmoji}>🔥</Text>
-            <Text style={styles.streakText}>{streak}</Text>
+      <TouchableOpacity
+        style={{ flex: 1 }}
+        activeOpacity={1}
+        onPress={handleBackgroundPress}
+      >
+        <View style={styles.topBar}>
+          <View style={styles.flagArrowContainer}>
+            <TouchableOpacity style={styles.flagButton} onPress={() => setDropdownVisible(!dropdownVisible)}>
+              <CountryFlag style={styles.flagEmoji} isoCode={languages[currentLanguage]} size={20} />
+            </TouchableOpacity>
+            <Ionicons name="chevron-down" size={16} color="black" style={styles.arrowIcon} />
+          </View>
+          <View style={styles.statsContainer}>
+            <View style={styles.streakContainer}>
+              <Text style={styles.streakEmoji}>🔥</Text>
+              <Text style={styles.streakText}>{streak}</Text>
             </View>
-          <View style={styles.starContainer}>
-            <Ionicons name="star" size={20} color="#FFD700" />
-            <Text style={styles.starText}>15/20</Text>
+            <View style={styles.starContainer}>
+              <Ionicons name="star" size={20} color="#FFD700" />
+              <Text style={styles.starText}>15/20</Text>
+            </View>
           </View>
         </View>
-      </View>
 
-      {dropdownVisible && (
-        <Animated.View style={[styles.dropdown, { opacity: fadeAnim }]}>
-          <ScrollView style={styles.dropdownScrollView}>
-            {Object.keys(languages).map((lang) => (
-              <TouchableOpacity key={lang} style={styles.dropdownItem} onPress={() => handleLanguageChange(lang)}>
-                <CountryFlag isoCode={languages[lang]} size={20} style={styles.dropdownFlag} />
-                <Text style={styles.dropdownItemText}>{lang.charAt(0).toUpperCase() + lang.slice(1)}</Text>
-              </TouchableOpacity>
+        {dropdownVisible && (
+          <Animated.View style={[styles.dropdown, { opacity: fadeAnim }]}>
+            <ScrollView style={styles.dropdownScrollView}>
+              {Object.keys(languages).map((lang) => (
+                <TouchableOpacity key={lang} style={styles.dropdownItem} onPress={() => handleLanguageChange(lang)}>
+                  <CountryFlag isoCode={languages[lang]} size={20} style={styles.dropdownFlag} />
+                  <Text style={styles.dropdownItemText}>{lang.charAt(0).toUpperCase() + lang.slice(1)}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </Animated.View>
+        )}
+
+        <View style={styles.progressContainer}>
+          <ProgressBar progress={progress} />
+          <Text style={styles.progressPercentage}>{`${Math.round(progress * 100)}%`}</Text>
+        </View>
+
+        <View style={styles.pickerContainer}>
+          <Picker
+            selectedValue={currentLevel}
+            onValueChange={(itemValue) => setCurrentLevel(itemValue)}
+            style={styles.picker}
+          >
+            {levels.map((level) => (
+              <Picker.Item key={level} label={level} value={level} />
             ))}
-          </ScrollView>
-        </Animated.View>
-      )}
+          </Picker>
+        </View>
 
-      <View style={styles.progressContainer}>
-        <Text style={styles.progressText}>Your Progress</Text>
-        <ProgressBar progress={progress} />
-        <Text style={styles.progressPercentage}>{`${Math.round(progress * 100)}%`}</Text>
-      </View>
-
-      <View style={styles.pickerContainer}>
-        <Picker
-          selectedValue={currentLevel}
-          onValueChange={(itemValue) => setCurrentLevel(itemValue)}
-          style={styles.picker}
-        >
-          {levels.map((level) => (
-            <Picker.Item key={level} label={level} value={level} />
-          ))}
-        </Picker>
-      </View>
-
-      {languageData && Object.keys(languageData.classes).length > 0 ? (
-        <FlatList
-          data={Object.entries(languageData.classes)}
-          keyExtractor={([lessonKey]) => lessonKey}
-          renderItem={({ item: [lessonKey, lessonData] }) => (
-            <LessonItem
-              title={lessonData.title}
-              completed={isLessonCompleted(lessonKey)}
-              onPress={() => handleLessonPress(lessonKey)}
-              nextLevel={lessonData.nextLevel}
-            />
-          )}
-        />
-      ) : (
-        <Text>No lessons available.</Text>
-      )}
+        {languageData && Object.keys(languageData.classes).length > 0 ? (
+          <FlatList
+            data={Object.entries(languageData.classes)}
+            keyExtractor={([lessonKey]) => lessonKey}
+            renderItem={({ item: [lessonKey, lessonData] }) => (
+              <LessonItem
+                title={lessonData.title}
+                completed={isLessonCompleted(lessonKey)}
+                onPress={() => handleLessonPress(lessonKey)}
+                nextLevel={lessonData.nextLevel}
+              />
+            )}
+          />
+        ) : (
+          <Text>No lessons available.</Text>
+        )}
+      </TouchableOpacity>
     </SafeAreaView>
   );
 };
@@ -353,7 +368,7 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   lessonItem: {
-    flexDirection: 'row',
+    flexDirection: 'row-reverse',
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: 16,
@@ -369,10 +384,36 @@ const styles = StyleSheet.create({
     marginHorizontal: 10,
     borderRadius: 10,
   },
+  lessonComplete: {
+    flexDirection: 'row-reverse',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 5,
+    marginVertical: 5,
+    marginHorizontal: 10,
+    borderRadius: 10,
+    backgroundColor: '#caf7be'
+  },
   lessonTitle: {
     fontSize: 16,
     fontWeight: 'bold',
     color: '#333',
+  },
+  sideLesson: {
+    width: 5,
+    height: 30,
+    backgroundColor: '#4CAF50',
+    position: 'absolute',
+  },
+  fullItem: {
+    flexDirection: 'column'
   },
   progressContainer: {
     padding: 16,

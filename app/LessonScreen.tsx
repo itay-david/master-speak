@@ -74,7 +74,7 @@ function LessonScreen({ route, navigation }: any) {
   };
 
   const finishLesson = () => {
-    const totalTasks = Object.keys(lessons!).length;
+    const totalTasks = Object.keys(lessons!).length -1;
     const successRate = (correctAnswers / totalTasks) * 100;
     
     if (successRate >= 60) {
@@ -110,6 +110,7 @@ function LessonScreen({ route, navigation }: any) {
           onNextTask={handleNextTask}
           taskKey={Object.keys(lessons)[currentIndex]}
           completed={!!completedTasks[Object.keys(lessons)[currentIndex]]}
+          language={language}
         />
       ) : (
         <View style={styles.summaryContainer}>
@@ -132,13 +133,13 @@ function LessonScreen({ route, navigation }: any) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#f3faff',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 10,
+    marginBottom: 20,
     marginTop: 50,
     paddingHorizontal: 20,
   },
@@ -149,7 +150,6 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     paddingRight: 8,
     paddingLeft: 8,
-    paddingBottom: 20,
   },
   summaryContainer: {
     flex: 1,
