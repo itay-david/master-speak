@@ -23,7 +23,7 @@ export default function Profile() {
       />
       <Text style={styles.username}>{user?.displayName}</Text>
       <TouchableOpacity onPress={logOut} style={styles.button}>
-        <Text style={styles.buttonText}>Sign Out</Text>
+        <Text style={styles.buttonText}>התנתק</Text>
       </TouchableOpacity>
     </View>
   );

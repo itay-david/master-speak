@@ -1,11 +1,9 @@
 import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native'
 import React from 'react'
 import { Colors } from '@/constants/Colors'
-import { useRouter } from 'expo-router'
+import { Redirect } from 'expo-router'
 
 export default function Login() {
-  const router = useRouter();
-
   return (
     <View style={styles.container}>
         <Text style={{
@@ -16,7 +14,7 @@ export default function Login() {
 
         <Text style={{fontSize: 17, textAlign: 'center', marginTop: 20}}>Welcome to Speak Master get ready to learn as much / fast / efficent as posibble!</Text>
 
-        <TouchableOpacity style={styles.button} onPress={() => router.push('auth/sign-in')}>
+        <TouchableOpacity style={styles.button} onPress={() => <Redirect href={'/auth'} />}>
           <Text style={{fontSize: 25, color: Colors.WHITE}}>Get Started</Text>
         </TouchableOpacity>
     </View>

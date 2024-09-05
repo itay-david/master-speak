@@ -4,6 +4,8 @@ import { Ionicons } from '@expo/vector-icons'; // Import Ionicons
 import ProgressBar from '../components/ProgressBar';
 import TaskComponent from '../components/TaskComponent';
 import { getLessonDataRef, getUserProgressRef, onValue, updateUserProgress } from './auth/firebaseConfig';
+import { getDatabase, ref, update } from 'firebase/database';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
 
 interface Lesson {
   type: 'newSentence' | 'completeSentence' | 'orderSentence' | 'trueOrFalse' | 'spellLetters';
@@ -51,6 +53,53 @@ function LessonScreen({ route, navigation }: any) {
     };
   }, [language, level, userId]);
 
+  const [points, setPoints] = useState(0);
+  const [userLevel, setUserLevel] = useState(1);
+
+  const db = getDatabase();
+
+  // Function to update points and level
+  const updatePointsAndLevel = async () => {
+    if (!userId) return;
+
+    let newPoints = points + 20;
+    let newLevel = userLevel;
+
+    if (newPoints >= 100) {
+      newPoints = 0;
+      newLevel += 1;
+    }
+
+    setPoints(newPoints);
+    setUserLevel(newLevel);
+
+    // Update Firebase
+    const progressRef = ref(db, `users/${userId}/progress`);
+    await update(progressRef, {
+      points: newPoints,
+      level: newLevel,
+    });
+  };
+
+  // This effect should be used to fetch the user data when the component mounts
+  useEffect(() => {
+    const auth = getAuth();
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        const progressRef = ref(db, `users/${user.uid}/progress`);
+        onValue(progressRef, (snapshot) => {
+          const data = snapshot.val();
+          if (data) {
+            setPoints(data.points || 0);
+            setUserLevel(data.level || 1);
+          }
+        });
+      }
+    });
+
+    return () => unsubscribe();
+  }, [userId]);
+
   const handleTaskComplete = (isCorrect: boolean) => {
     const currentTask = lessons![Object.keys(lessons!)[currentIndex]];
     if (currentTask.type !== 'newSentence') {
@@ -79,13 +128,14 @@ function LessonScreen({ route, navigation }: any) {
     
     if (successRate >= 60) {
       updateUserProgress(userId, language, level, lessonKey, true);
+      updatePointsAndLevel()
     }
     
     navigation.goBack();
   };
 
   if (!lessons) {
-    return <Text>Loading...</Text>;
+    return <Text>טוען...</Text>;
   }
 
   const totalTasks = Object.keys(lessons).length;
@@ -115,7 +165,7 @@ function LessonScreen({ route, navigation }: any) {
       ) : (
         <View style={styles.summaryContainer}>
           <Text style={styles.summaryText}>
-            {successRate >= 60 ? 'כל הכבוד! עברת את השיעור' : 'לא נורא, לא עברת הפעם. נסה שוב!'}
+            {successRate > 60 ? 'כל הכבוד! עברת את השיעור' : 'לא נורא, לא עברת הפעם. נסה שוב!'}
           </Text>
           <Text style={styles.successRateText}>אחוזי הצלחה: {successRate.toFixed(2)}%</Text>
           <TouchableOpacity

@@ -6,7 +6,7 @@ import * as Speech from 'expo-speech';
 
 
 interface Task {
-  type: 'newSentence' | 'completeSentence' | 'orderSentence' | 'trueOrFalse' | 'spellLetters' | 'matchThePairs';
+  type: 'newSentence' | 'completeSentence' | 'orderSentence' | 'trueOrFalse' | 'spellLetters' | 'matchThePairs' | 'chooseRight';
   title: string;
   sentence?: string;
   translate?: string;
@@ -60,7 +60,7 @@ const TaskComponent: React.FC<Task> = ({
   const getLanguageCode = (lang: string): string => {
     switch (lang) {
       case 'spanish':
-        return 'en';
+        return 'es';
       case 'french':
         return 'fr';
       case 'german':
@@ -75,8 +75,8 @@ const TaskComponent: React.FC<Task> = ({
   const speak = (text: string) => {
     Speech.speak(text, {
       language: getLanguageCode(language),
-      pitch: 1.0, // Adjust pitch if needed
-      rate: 1,  // Adjust rate if needed
+      pitch: 1, // Adjust pitch if needed
+      rate: 0.75,  // Adjust rate if needed
     });
   };
 
@@ -324,9 +324,45 @@ const TaskComponent: React.FC<Task> = ({
     </View>
   );
 
+  const renderChooseRightTask = () => (
+    <View style={styles.taskContainer}>
+      <Text style={styles.title}>{title}</Text>
+      <Text style={styles.title}>{question}</Text>
+      {options && (
+        <View style={styles.optionsContainer}>
+          {Object.entries(options).map(([key, option]) => (
+            <TouchableOpacity
+              key={key}
+              style={[
+                styles.optionButton,
+                selectedOption === option
+                  ? option === answer
+                    ? styles.correctOption
+                    : styles.incorrectOption
+                  : {},
+              ]}
+              onPress={() => handleOptionPress(option)}
+              disabled={selectedOption !== null}
+            >
+              <Text style={styles.optionText}>{option}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      )}
+    </View>
+  );
+
   const renderOrderSentenceTask = () => (
     <View style={styles.taskContainer}>
       <Text style={styles.title}>{title}</Text>
+      <TouchableOpacity onPress={() => speak({sentence}.sentence, getLanguageCode(language))}>
+        <Image
+          style={styles.video}
+          source={{
+            uri: `${imageUrl}`,
+          }}
+        />
+      </TouchableOpacity>
       <View style={styles.sentenceContainer}>
         {orderedWords.map((word, index) => (
           <TouchableOpacity
@@ -341,7 +377,7 @@ const TaskComponent: React.FC<Task> = ({
           <View key={`empty-${index}`} style={styles.emptyWordContainer} />
         ))}
       </View>
-      <Text style={styles.instructionText}>Tap words to add or remove them</Text>
+      <Text style={styles.instructionText}>לחצו על המילים בשביל להוסיף או להוריד.</Text>
       <View style={styles.availableWordsContainer}>
         {availableWords.map((word, index) => (
           <TouchableOpacity
@@ -438,6 +474,7 @@ const TaskComponent: React.FC<Task> = ({
       {type === 'spellLetters' && renderSpellLettersTask()}
       {type === 'orderSentence' && renderOrderSentenceTask()}
       {type === 'matchThePairs' && renderMatchThePairsTask()}
+      {type === 'chooseRight' && renderChooseRightTask()}
       {showCard && renderFeedbackCard()}
       {type === 'newSentence' && renderNextButton()}
     </View>
@@ -471,7 +508,10 @@ const styles = StyleSheet.create({
     fontWeight: '600'
   },
   question: {
-    fontSize: 20
+    fontSize: 20,
+    textAlign: 'right',
+    marginBottom: 16,
+    color: '#4a4949'
   },
   translate: {
     fontSize: 20,
@@ -661,7 +701,7 @@ const styles = StyleSheet.create({
   },
   matchedPairText: {
     fontSize: 16,
-    color: '#4CAF50',
+    // color: '#4CAF50',
     marginTop: 5,
   },
   correctMatchText: {
@@ -684,7 +724,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   matchedPairOption: {
-    backgroundColor: '#BDBDBD',
+    backgroundColor: '#FFFFFF',
   },
   pairOptionText: {
     fontSize: 16,

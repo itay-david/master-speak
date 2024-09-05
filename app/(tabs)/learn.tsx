@@ -1,36 +1,38 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, StatusBar, Platform, FlatList, Animated, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, StatusBar, Platform, FlatList, Animated, ScrollView, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import CountryFlag from 'react-native-country-flag';
 import { Picker } from '@react-native-picker/picker';
-import { onValue, getLessonRef, getUserProgressRef, updateUserProgress } from '../auth/firebaseConfig';
+import { onValue, getLessonRef, getUserProgressRef, updateUserProgress, ref } from '../auth/firebaseConfig';
 import { LanguageData, LessonData, UserProgress } from '../../constants/types';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import ProgressBar from '../../components/ProgressBar';
 import { useNavigation } from '@react-navigation/native';
-import LessonScreen from '../LessonScreen';
+import { get, getDatabase, set, update } from 'firebase/database';
 
 interface LessonItemProps {
   title: string;
   completed: boolean;
   onPress: () => void;
   nextLevel: string;
+  imageUrl: string;
 }
 
-const LessonItem: React.FC<LessonItemProps> = ({ title, completed, onPress, nextLevel }) => {
+const LessonItem: React.FC<LessonItemProps> = ({ title, completed, onPress, imageUrl, nextLevel }) => {
   return (
-    <View style={styles.fullItem}>
-      <TouchableOpacity onPress={onPress} style={completed ? styles.lessonComplete : styles.lessonItem}>
+      <View>
+      <TouchableOpacity onPress={onPress} style={[styles.lessonItem, completed && styles.lessonComplete]}>
+        <View style={styles.imageContainer}>
+          <Image source={{ uri: imageUrl ? `${imageUrl}` : "https://wallpapers.com/images/hd/1920x1080-aesthetic-glrfk0ntspz3tvxg.jpg"}} style={styles.image} />
+          {completed && <Ionicons name="checkmark-circle" size={24} color="green" style={styles.checkIcon} />}
+        </View>
         <Text style={styles.lessonTitle}>{title}</Text>
-        {completed && <Ionicons name="checkmark-circle" size={24} color="green" />}
       </TouchableOpacity>
-      <View style={styles.sideLesson}></View>
-      
       {nextLevel ? <Text style={styles.nextLevelText}>{nextLevel}</Text> : ''}
-      
     </View>
   );
 };
+
 
 const Learn: React.FC = () => {
   const [progress, setProgress] = useState(0);
@@ -42,8 +44,10 @@ const Learn: React.FC = () => {
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const [fadeAnim] = useState(new Animated.Value(0));
   const [streak, setStreak] = useState(0);
-  const [lastCompletionDate, setLastCompletionDate] = useState<Date | null>(null);
+  const [points, setPoints] = useState(0);
+  const [level, setLevel] = useState(1);
   const navigation = useNavigation();
+  const [lastCompletionDate, setLastCompletionDate] = useState<Date | null>(null);
 
   const languages: any = {
     spanish: 'es',
@@ -53,12 +57,29 @@ const Learn: React.FC = () => {
   };
   const levels = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
 
+  const db = getDatabase();
 
   useEffect(() => {
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         setUserId(user.uid);
+        // Load user's points and level
+        const progressRef = ref(db, `users/${user.uid}/progress`);
+        const streakRef = ref(db, `users/${user.uid}`);
+        onValue(progressRef, (snapshot) => {
+          const data = snapshot.val();
+          if (data) {
+            setPoints(data.points || 0);
+            setLevel(data.level || 1);
+          }
+        });
+        onValue(streakRef, (snapshot) => {
+          const data = snapshot.val();
+          if (data) {
+            setStreak(data.streak || 0);
+          }
+        });
       } else {
         setUserId(null);
       }
@@ -66,6 +87,77 @@ const Learn: React.FC = () => {
 
     return () => unsubscribe();
   }, []);
+
+  const updatePointsAndLevel = async () => {
+    if (!userId) return;
+
+    let newPoints = points + 20;
+    let newLevel = level;
+
+    if (newPoints >= 100) {
+      newPoints = 0;
+      newLevel += 1;
+    }
+
+    setPoints(newPoints);
+    setLevel(newLevel);
+
+    // Update Firebase
+    const progressRef = ref(db, `users/${userId}/progress`);
+    await update(progressRef, {
+      points: newPoints,
+      level: newLevel,
+    });
+  };
+
+  const updateStreak = async () => {
+    const today = new Date();
+    const todayDateString = today.toISOString().split('T')[0]; // Format to YYYY-MM-DD
+  
+    if (!userId) return;
+  
+    const streakRef = ref(db, `users/${userId}`);
+    
+    // Fetch the current streak and last completion date from Firebase
+    const snapshot = await get(streakRef);
+    if (snapshot.exists()) {
+      const data = snapshot.val();
+      const lastCompletionDate = data.lastCompletionDate;
+      let newStreak = data.streak || 0;
+  
+      // If last completion date isn't today, update streak and last completion date
+      if (lastCompletionDate !== todayDateString) {
+        newStreak += 1; // Increment streak
+        await update(streakRef, {
+          streak: newStreak,
+          lastCompletionDate: todayDateString,
+        });
+        setStreak(newStreak); // Update local state with new streak value
+      }
+    } else {
+      // If no data exists for the user, start a new streak
+      await update(streakRef, {
+        streak: 1,
+        lastCompletionDate: todayDateString,
+      });
+      setStreak(1); // Set local streak state to 1
+    }
+  }
+
+  const handleLessonPress = (lessonKey: string) => {
+    navigation.navigate('LessonScreen', {
+      userId,
+      language: currentLanguage,
+      level: currentLevel,
+      lessonKey,
+    });
+    updateStreak()
+  };
+
+  const handleLanguageChange = (language: string) => {
+    setCurrentLanguage(language);
+    setDropdownVisible(false);
+  };
 
   useEffect(() => {
     const lessonRef = getLessonRef(currentLanguage, currentLevel);
@@ -96,47 +188,6 @@ const Learn: React.FC = () => {
       setProgress(totalLessons > 0 ? completedLessons / totalLessons : 0);
     }
   }, [languageData, userProgress, currentLanguage, currentLevel]);
-
-  const handleLessonPress = (lessonKey: string) => {
-    const today = new Date();
-    
-    if (!lastCompletionDate || (today.getTime() - lastCompletionDate.getTime()) >= 24 * 60 * 60 * 1000) {
-      setStreak(1); // Start streak or reset if more than 24 hours have passed
-    } else {
-      if (today.toDateString() !== lastCompletionDate.toDateString()) {
-        setStreak(streak + 1); // Increment streak only if it’s a new day
-      }
-    }
-  
-    setLastCompletionDate(today);
-
-  
-    navigation.navigate('LessonScreen', {
-      userId,
-      language: currentLanguage,
-      level: currentLevel,
-      lessonKey,
-    });
-  };
-
-  useEffect(() => {
-    const checkStreak = () => {
-      if (lastCompletionDate) {
-        const now = new Date();
-        if ((now.getTime() - lastCompletionDate.getTime()) >= 48 * 60 * 60 * 1000) {
-          setStreak(0); // Reset streak if no class completed within 48 hours
-        }
-      }
-    };
-  
-    const interval = setInterval(checkStreak, 1000 * 60 * 60); // Check every hour
-    return () => clearInterval(interval);
-  }, [lastCompletionDate]);
-
-  const handleLanguageChange = (language: string) => {
-    setCurrentLanguage(language);
-    setDropdownVisible(false);
-  };
 
   useEffect(() => {
     if (dropdownVisible) {
@@ -185,9 +236,12 @@ const Learn: React.FC = () => {
               <Text style={styles.streakText}>{streak}</Text>
             </View>
             <View style={styles.starContainer}>
-              <Ionicons name="star" size={20} color="#FFD700" />
-              <Text style={styles.starText}>15/20</Text>
+            <View style={styles.starWrapper}>
+              <Ionicons name="star" size={30} color="#FFD700" style={styles.starIcon} />
+              <Text style={styles.levelInsideStar}>{level}</Text>
             </View>
+            <Text style={styles.starText}>{`${points}/100`}</Text>
+          </View>
           </View>
         </View>
 
@@ -223,25 +277,25 @@ const Learn: React.FC = () => {
 
         {languageData && Object.keys(languageData.classes).length > 0 ? (
           <FlatList
-            data={Object.entries(languageData.classes)}
-            keyExtractor={([lessonKey]) => lessonKey}
-            renderItem={({ item: [lessonKey, lessonData] }) => (
+            data={Object.keys(languageData.classes)}
+            keyExtractor={(item) => item}
+            renderItem={({ item }) => (
               <LessonItem
-                title={lessonData.title}
-                completed={isLessonCompleted(lessonKey)}
-                onPress={() => handleLessonPress(lessonKey)}
-                nextLevel={lessonData.nextLevel}
+                title={languageData.classes[item].title}
+                completed={isLessonCompleted(item)}
+                imageUrl={languageData.classes[item].imageUrl}
+                nextLevel={languageData.classes[item].nextLevel}
+                onPress={() => handleLessonPress(item)}
               />
             )}
           />
         ) : (
-          <Text>No lessons available.</Text>
+          <Text>טוען שיעורים...</Text>
         )}
       </TouchableOpacity>
     </SafeAreaView>
   );
 };
-
 
 const styles = StyleSheet.create({
   container: {
@@ -295,31 +349,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   streakContainer: {
-    flexDirection: 'row',
+    flexDirection: 'row-reverse',
     alignItems: 'center',
     marginRight: 15,
   },
   streakEmoji: {
     fontSize: 20,
-    marginRight: 5,
+    marginLeft: 5,
   },
   streakText: {
     fontSize: 16,
     fontWeight: 'bold',
     color: '#333',
   },
-  starContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  starText: {
-    marginLeft: 5,
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#333',
-  },
   pickerContainer: {
-    flexDirection: 'row',
+    flexDirection: 'row-reverse',
     justifyContent: 'space-between',
     padding: 10,
     backgroundColor: '#ffffff',
@@ -353,67 +397,80 @@ const styles = StyleSheet.create({
     maxHeight: 200,
   },
   dropdownItem: {
-    flexDirection: 'row',
+    flexDirection: 'row-reverse',
     alignItems: 'center',
     padding: 10,
     borderBottomWidth: 1,
     borderBottomColor: '#e0e0e0',
   },
   dropdownFlag: {
-
+    width: 25,
+    height: 25,
+    borderRadius: 12.5,
+    overflow: 'hidden',
   },
   dropdownItemText: {
-    marginLeft: 10,
+    marginRight: 10,
     fontSize: 16,
     color: '#333',
   },
   lessonItem: {
-    flexDirection: 'row-reverse',
-    justifyContent: 'space-between',
+    flexDirection: 'row-reverse', // RTL layout
+    justifyContent: 'flex-start',
     alignItems: 'center',
     padding: 16,
+    backgroundColor: '#ffffff',
     borderBottomWidth: 1,
     borderBottomColor: '#e0e0e0',
-    backgroundColor: '#ffffff',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 5,
-    marginVertical: 5,
     marginHorizontal: 10,
     borderRadius: 10,
   },
   lessonComplete: {
-    flexDirection: 'row-reverse',
-    justifyContent: 'space-between',
+    flexDirection: 'row-reverse', // RTL layout
+    justifyContent: 'flex-start',
     alignItems: 'center',
     padding: 16,
+    backgroundColor: '#caf7be',
     borderBottomWidth: 1,
     borderBottomColor: '#e0e0e0',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 5,
-    marginVertical: 5,
     marginHorizontal: 10,
     borderRadius: 10,
-    backgroundColor: '#caf7be'
+  },
+  imageContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 10, // Adjusted for RTL
+  },
+  image: {
+    width: 65,
+    height: 65,
+    borderRadius: 32.5,
+  },
+  checkIcon: {
+    position: 'absolute',
+    bottom: -5,
+    left: -5, // Adjusted for RTL
+  },
+  lineBelowImage: {
+    width: '100%',
+    height: 3,
+    backgroundColor: '#e0e0e0', // Default color
+    marginTop: 5,
+  },
+  lineCompleted: {
+    backgroundColor: '#4CAF50', // Green color when completed
   },
   lessonTitle: {
     fontSize: 16,
     fontWeight: 'bold',
     color: '#333',
+    marginRight: 10, // Adjusted for RTL
   },
-  sideLesson: {
-    width: 5,
-    height: 30,
-    backgroundColor: '#4CAF50',
-    position: 'absolute',
-  },
-  fullItem: {
-    flexDirection: 'column'
+  nextLevelText: {
+    fontSize: 18,
+    color: '#4CAF50',
+    marginTop: 10,
+    textAlign: 'right',
   },
   progressContainer: {
     padding: 16,
@@ -448,8 +505,58 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: '#666',
   },
-  nextLevelText: {
-    fontSize: 30
+  starWrapper: {
+    position: 'relative',
+    width: 30,
+    height: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  starIcon: {
+    position: 'absolute',
+    zIndex: 1,
+  },
+  levelInsideStar: {
+    zIndex: 2,
+    color: '#333',
+    fontSize: 12,
+    fontWeight: 'bold',
+    position: 'absolute',
+  },
+  starContainer: {
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    padding: 5,
+    borderRadius: 15,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  starText: {
+    marginLeft: 5,
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#FFD700',
+    textShadowColor: 'rgba(0, 0, 0, 0.2)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
+  },
+  levelText: {
+    marginLeft: 5,
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#4B0082', // A deep indigo color for a richer look
+    textShadowColor: 'rgba(75, 0, 130, 0.4)', // A shadow matching the text color
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 3,
+    letterSpacing: 0.5, // Slight spacing for a modern feel
+    borderColor: '#FFD700', // Gold border to match the starText
+    borderWidth: 1,
+    paddingHorizontal: 5,
+    borderRadius: 5,
   },
 });
 

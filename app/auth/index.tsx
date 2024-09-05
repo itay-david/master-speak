@@ -9,13 +9,10 @@ import { firebaseConfig, googleSignInConfig } from '../auth/firebaseConfig';
 import { useAuth } from '../../constants/AuthContext';
 import { Link, Redirect, useNavigation } from "expo-router";
 
-
 WebBrowser.maybeCompleteAuthSession();
 
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
-
-export const user = AsyncStorage.getItem('user');
 
 const Auth: React.FC = () => {
   const [email, setEmail] = useState<string>('');
@@ -28,7 +25,6 @@ const Auth: React.FC = () => {
   const [fadeAnim] = useState(new Animated.Value(0));
 
   const [request, response, promptAsync] = Google.useIdTokenAuthRequest(googleSignInConfig);
-
 
   Animated.timing(fadeAnim, {
     toValue: 1,
@@ -46,12 +42,13 @@ const Auth: React.FC = () => {
 
     loadUser();
 
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user);
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
-        AsyncStorage.setItem('user', JSON.stringify(user));
+        setUser(user);
+        await AsyncStorage.setItem('user', JSON.stringify(user));
       } else {
-        AsyncStorage.removeItem('user');
+        setUser(null);
+        await AsyncStorage.removeItem('user');
       }
     });
 
@@ -103,6 +100,7 @@ const Auth: React.FC = () => {
     setIsLoading(true);
     try {
       await signOut(auth);
+      await AsyncStorage.removeItem('user');
     } catch (error: any) {
       console.error(error);
       setErrorMessage('An error occurred during sign-out');
@@ -113,13 +111,13 @@ const Auth: React.FC = () => {
 
   const handlePasswordReset = async () => {
     if (!email) {
-      setErrorMessage('Please enter your email address');
+      setErrorMessage('הכנס את כתובת האימייל');
       return;
     }
     setIsLoading(true);
     try {
       await sendPasswordResetEmail(auth, email);
-      Alert.alert('Password Reset', 'Password reset email sent!');
+      Alert.alert('שינוי סיסמה', 'האמייל לשינוי הסיסמה נשלח!');
     } catch (error: any) {
       handleFirebaseError(error);
     } finally {
@@ -177,14 +175,14 @@ const Auth: React.FC = () => {
     >
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
         <Animated.View style={[styles.authContainer, { opacity: fadeAnim }]}>
-          <Text style={styles.title}>{isLogin ? 'Sign In' : 'Sign Up'}</Text>
+          <Text style={styles.title}>{isLogin ? 'התחבר למשתמש' : 'צור משתמש'}</Text>
           
           {!isLogin && (
             <TextInput
               style={styles.input}
               value={username}
               onChangeText={setUsername}
-              placeholder="Username"
+              placeholder="שם משתמש"
               autoCapitalize="none"
             />
           )}
@@ -193,7 +191,7 @@ const Auth: React.FC = () => {
             style={styles.input}
             value={email}
             onChangeText={setEmail}
-            placeholder="Email"
+            placeholder="אימייל"
             autoCapitalize="none"
             keyboardType="email-address"
           />
@@ -202,29 +200,29 @@ const Auth: React.FC = () => {
             style={styles.input}
             value={password}
             onChangeText={setPassword}
-            placeholder="Password"
+            placeholder="סיסמה"
             secureTextEntry
           />
           
           {errorMessage ? <Text style={styles.errorText}>{errorMessage}</Text> : null}
           
           <TouchableOpacity style={styles.button} onPress={handleEmailPasswordAuth} disabled={isLoading}>
-            {isLoading ? <ActivityIndicator color="#ffffff" /> : <Text style={styles.buttonText}>{isLogin ? 'Sign In' : 'Sign Up'}</Text>}
+            {isLoading ? <ActivityIndicator color="#ffffff" /> : <Text style={styles.buttonText}>{isLogin ? 'התחבר' : 'הירשם'}</Text>}
           </TouchableOpacity>
           
           <TouchableOpacity style={styles.googleButton} onPress={handleGoogleSignIn} disabled={isLoading || !request}>
-            {isLoading ? <ActivityIndicator color="#ffffff" /> : <Text style={styles.buttonText}>Sign In with Google</Text>}
+            {isLoading ? <ActivityIndicator color="#ffffff" /> : <Text style={styles.buttonText}>התחבר באמצעות גוגל</Text>}
           </TouchableOpacity>
           
           {isLogin && (
             <TouchableOpacity onPress={handlePasswordReset}>
-              <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+              <Text style={styles.forgotPasswordText}>שכחת סיסמה?</Text>
             </TouchableOpacity>
           )}
           
           <TouchableOpacity onPress={() => setIsLogin(!isLogin)}>
             <Text style={styles.toggleText}>
-              {isLogin ? 'Need an account? Sign Up' : 'Already have an account? Sign In'}
+              {isLogin ? 'עוד אין לך משתמש? צור!' : 'יש לך משתמש? התחבר!'}
             </Text>
           </TouchableOpacity>
         </Animated.View>
@@ -256,58 +254,52 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   title: {
-    fontSize: 32,
+    fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 30,
-    textAlign: 'center',
     color: '#333',
+    marginBottom: 20,
+    textAlign: 'center',
   },
   input: {
-    height: 55,
-    borderColor: '#ddd',
     borderWidth: 1,
-    marginBottom: 20,
-    padding: 15,
-    borderRadius: 10,
-    fontSize: 16,
-    backgroundColor: '#f9f9f9',
+    borderColor: '#ddd',
+    padding: 10,
+    marginVertical: 10,
+    borderRadius: 8,
   },
   button: {
-    backgroundColor: '#3498db',
-    padding: 15,
-    borderRadius: 10,
+    backgroundColor: '#0066cc',
+    paddingVertical: 15,
+    borderRadius: 8,
+    marginTop: 20,
     alignItems: 'center',
-    marginTop: 10,
   },
   googleButton: {
-    backgroundColor: '#db3236',
-    padding: 15,
-    borderRadius: 10,
+    backgroundColor: '#db4437',
+    paddingVertical: 15,
+    borderRadius: 8,
+    marginTop: 20,
     alignItems: 'center',
-    marginTop: 15,
   },
   buttonText: {
-    color: '#fff',
-    fontSize: 18,
+    color: '#ffffff',
+    fontSize: 16,
     fontWeight: 'bold',
   },
-  toggleText: {
-    color: '#3498db',
-    textAlign: 'center',
-    marginTop: 25,
-    fontSize: 16,
-  },
   forgotPasswordText: {
-    color: '#3498db',
+    color: '#0066cc',
+    marginTop: 15,
     textAlign: 'center',
+  },
+  toggleText: {
+    color: '#0066cc',
     marginTop: 20,
-    fontSize: 16,
+    textAlign: 'center',
   },
   errorText: {
-    color: '#e74c3c',
-    textAlign: 'left',
-    marginBottom: 15,
-    fontSize: 14,
+    color: '#ff0000',
+    marginTop: 10,
+    textAlign: 'center',
   },
 });
 

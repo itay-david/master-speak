@@ -2,7 +2,7 @@ import { useAuth, AuthProvider } from '../constants/AuthContext';
 import LessonScreen from './LessonScreen';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Auth from './auth';
-import TabLayout from './(tabs)/_layout';  // Import the TabLayout
+import TabLayout from './(tabs)/_layout';
 
 const Stack = createNativeStackNavigator();
 

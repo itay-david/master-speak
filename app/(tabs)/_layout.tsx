@@ -26,10 +26,10 @@ export default function TabLayout() {
         options={{ 
           headerShown: false,
           tabBarIcon: ({ color, size, focused }) => (
-            <Ionicons name={focused ? 'book' : 'book-outline'} size={focused ? size + 4 : size} color={focused ? 'black' : color} />
+            <Ionicons name={focused ? 'book' : 'book-outline'} size={focused ? size + 4 : size} color={focused ? '#0088c7' : '#6d8491'} />
           ),
           tabBarLabel: ({ focused }) => (
-            <Text style={{ fontSize: focused ? 12 : 10, color: focused ? 'black' : '#888' }}>למידה</Text>
+            <Text style={{ fontSize: focused ? 12 : 10, color: focused ? '#0088c7' : '#6d8491' }}>למידה</Text>
           ),
         }} 
       />
@@ -39,10 +39,10 @@ export default function TabLayout() {
         options={{ 
           headerShown: true,
           tabBarIcon: ({ color, size, focused }) => (
-            <Ionicons name={focused ? 'chatbubbles' : 'chatbubbles-outline'} size={focused ? size + 4 : size} color={focused ? 'black' : color} />
+            <Ionicons name={focused ? 'chatbubbles' : 'chatbubbles-outline'} size={focused ? size + 4 : size} color={focused ? '#0088c7' : '#6d8491'} />
           ),
           tabBarLabel: ({ focused }) => (
-            <Text style={{ fontSize: focused ? 12 : 10, color: focused ? 'black' : '#888' }}>קהילה</Text>
+            <Text style={{ fontSize: focused ? 12 : 10, color: focused ? '#0088c7' : '#6d8491' }}>קהילה</Text>
           ),
         }} 
       />
@@ -52,10 +52,10 @@ export default function TabLayout() {
         options={{ 
           headerShown: true,
           tabBarIcon: ({ color, size, focused }) => (
-            <Ionicons name={focused ? 'person' : 'person-outline'} size={focused ? size + 4 : size} color={focused ? 'black' : color} />
+            <Ionicons name={focused ? 'person' : 'person-outline'} size={focused ? size + 4 : size} color={focused ? '#0088c7' : '#6d8491'} />
           ),
           tabBarLabel: ({ focused }) => (
-            <Text style={{ fontSize: focused ? 12 : 10, color: focused ? 'black' : '#888' }}>פרופיל</Text>
+            <Text style={{ fontSize: focused ? 12 : 10, color: focused ? '#0088c7' : '#6d8491' }}>פרופיל</Text>
           ),
         }} 
       />

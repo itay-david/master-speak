@@ -1,10 +1,10 @@
 {
   "expo": {
-    "name": "speak_master",
-    "slug": "speak_master",
-    "version": "1.0.0",
+    "name": "LingUp",
+    "slug": "LingUp",
+    "version": "0.0.1",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/Logo.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "splash": {
@@ -17,9 +17,10 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "foregroundImage": "./assets/images/Logo.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.lingup.lingup"
     },
     "web": {
       "bundler": "metro",
@@ -31,6 +32,14 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "3cb147fa-6078-4cba-b179-8624801c9bb0"
+      }
     }
   }
 }

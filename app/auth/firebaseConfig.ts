@@ -1,5 +1,7 @@
 import { initializeApp } from 'firebase/app';
 import { getDatabase, ref, onValue, update, DatabaseReference, get } from 'firebase/database';
+import { initializeAuth, getAuth, getReactNativePersistence } from 'firebase/auth';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const firebaseConfig = {
   apiKey: "AIzaSyA3tfDiusb-Z2aZgUfBzjMhcbj0U2Mi6fw",
@@ -15,13 +17,21 @@ export const firebaseConfig = {
 export const googleSignInConfig = {
   webClientId: '1005726874717-onelgi74eue4fv0bd9c0kkv4ttcle3sc.apps.googleusercontent.com',
   iosClientId: 'YOUR_IOS_CLIENT_ID',
-  androidClientId: 'YOUR_ANDROID_CLIENT_ID',
+  androidClientId: '1005726874717-tim81mjbjf3hql6q559nte6a76kbg41p.apps.googleusercontent.com',
 };
 
+// Initialize Firebase
 const app = initializeApp(firebaseConfig);
+
+// Initialize Firebase Auth with persistence
+const auth = initializeAuth(app, {
+  persistence: getReactNativePersistence(AsyncStorage)
+});
+
+// Initialize Firebase Database
 const database = getDatabase(app);
 
-export { database, ref, onValue, update, get };
+export { auth, database, ref, onValue, update, get };
 
 export function getLessonRef(language: string, level: string, lessonKey: string): DatabaseReference {
   return ref(database, `languages/${language}/levels/${level}`);
@@ -30,7 +40,6 @@ export function getLessonRef(language: string, level: string, lessonKey: string)
 export function getLessonDataRef(language: string, level: string, lessonKey: string): DatabaseReference {
   return ref(database, `languages/${language}/levels/${level}/classes/${lessonKey}/lessons`);
 }
-
 
 export function getUserProgressRef(userId: string): DatabaseReference {
   return ref(database, `userProgress/${userId}`);
