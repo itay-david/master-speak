@@ -37,7 +37,7 @@ export default function TabLayout() {
         name='community' 
         component={Community}
         options={{ 
-          headerShown: true,
+          headerShown: false,
           tabBarIcon: ({ color, size, focused }) => (
             <Ionicons name={focused ? 'chatbubbles' : 'chatbubbles-outline'} size={focused ? size + 4 : size} color={focused ? '#0088c7' : '#6d8491'} />
           ),
