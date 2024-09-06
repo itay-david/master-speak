@@ -9,6 +9,7 @@ import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import ProgressBar from '../../components/ProgressBar';
 import { useNavigation } from '@react-navigation/native';
 import { get, getDatabase, set, update } from 'firebase/database';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface LessonItemProps {
   title: string;
@@ -154,9 +155,43 @@ const Learn: React.FC = () => {
     updateStreak()
   };
 
+  useEffect(() => {
+    loadPreferences();
+  }, []);
+
+  const loadPreferences = async () => {
+    try {
+      const savedLanguage = await AsyncStorage.getItem('selectedLanguage');
+      const savedLevel = await AsyncStorage.getItem('selectedLevel');
+      
+      if (savedLanguage !== null) {
+        setCurrentLanguage(savedLanguage);
+      }
+      if (savedLevel !== null) {
+        setCurrentLevel(savedLevel);
+      }
+    } catch (error) {
+      console.error('Error loading preferences:', error);
+    }
+  };
+
+  const savePreference = async (key: string, value: string) => {
+    try {
+      await AsyncStorage.setItem(key, value);
+    } catch (error) {
+      console.error(`Error saving ${key} preference:`, error);
+    }
+  };
+
   const handleLanguageChange = (language: string) => {
     setCurrentLanguage(language);
+    savePreference('selectedLanguage', language);
     setDropdownVisible(false);
+  };
+
+  const handleLevelChange = (level: string) => {
+    setCurrentLevel(level);
+    savePreference('selectedLevel', level);
   };
 
   useEffect(() => {
@@ -266,14 +301,14 @@ const Learn: React.FC = () => {
         <View style={styles.pickerContainer}>
           <Picker
             selectedValue={currentLevel}
-            onValueChange={(itemValue) => setCurrentLevel(itemValue)}
+            onValueChange={handleLevelChange}
             style={styles.picker}
           >
-            {levels.map((level) => (
-              <Picker.Item key={level} label={level} value={level} />
-            ))}
-          </Picker>
-        </View>
+          {levels.map((level) => (
+            <Picker.Item key={level} label={level} value={level} />
+          ))}
+        </Picker>
+      </View>
 
         {languageData && Object.keys(languageData.classes).length > 0 ? (
           <FlatList
