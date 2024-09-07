@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, StatusBar, Platform, FlatList, Animated, ScrollView, Image } from 'react-native';
+import React, { useEffect, useState, useRef } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, StatusBar, Platform, FlatList, Animated, ScrollView, Image, Dimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import CountryFlag from 'react-native-country-flag';
 import { Picker } from '@react-native-picker/picker';
@@ -17,23 +17,31 @@ interface LessonItemProps {
   onPress: () => void;
   nextLevel: string;
   imageUrl: string;
+  isLocked: boolean;
+  isCurrent: boolean;
 }
 
-const LessonItem: React.FC<LessonItemProps> = ({ title, completed, onPress, imageUrl, nextLevel }) => {
+const LessonItem: React.FC<LessonItemProps> = ({ title, completed, onPress, imageUrl, nextLevel, isLocked, isCurrent }) => {
   return (
-      <View>
-      <TouchableOpacity onPress={onPress} style={[styles.lessonItem, completed && styles.lessonComplete]}>
-        <View style={styles.imageContainer}>
-          <Image source={{ uri: imageUrl ? `${imageUrl}` : "https://wallpapers.com/images/hd/1920x1080-aesthetic-glrfk0ntspz3tvxg.jpg"}} style={styles.image} />
-          {completed && <Ionicons name="checkmark-circle" size={24} color="green" style={styles.checkIcon} />}
-        </View>
-        <Text style={styles.lessonTitle}>{title}</Text>
-      </TouchableOpacity>
-      {nextLevel ? <Text style={styles.nextLevelText}>{nextLevel}</Text> : ''}
-    </View>
+    <TouchableOpacity 
+      onPress={onPress} 
+      style={[
+        styles.lessonItem, 
+        completed && styles.lessonComplete,
+        isLocked && styles.lessonLocked,
+        isCurrent && styles.lessonCurrent
+      ]}
+    >
+      <View style={styles.imageContainer}>
+        <Image source={{ uri: imageUrl ? `${imageUrl}` : "https://wallpapers.com/images/hd/1920x1080-aesthetic-glrfk0ntspz3tvxg.jpg"}} style={styles.image} />
+        {completed && <Ionicons name="checkmark-circle" size={24} color="green" style={styles.checkIcon} />}
+        {isLocked && <Ionicons name="lock-closed" size={24} color="gray" style={styles.lockIcon} />}
+      </View>
+      <Text style={[styles.lessonTitle, isLocked && styles.lockedText]}>{title}</Text>
+      {nextLevel ? <Text style={styles.nextLevelText}>{nextLevel}</Text> : null}
+    </TouchableOpacity>
   );
 };
-
 
 const Learn: React.FC = () => {
   const [progress, setProgress] = useState(0);
@@ -47,8 +55,9 @@ const Learn: React.FC = () => {
   const [streak, setStreak] = useState(0);
   const [points, setPoints] = useState(0);
   const [level, setLevel] = useState(1);
+  const [currentLessonIndex, setCurrentLessonIndex] = useState(0);
   const navigation = useNavigation();
-  const [lastCompletionDate, setLastCompletionDate] = useState<Date | null>(null);
+  const flatListRef = useRef<FlatList>(null);
 
   const languages: any = {
     spanish: 'es',
@@ -59,13 +68,13 @@ const Learn: React.FC = () => {
   const levels = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
 
   const db = getDatabase();
+  const windowHeight = Dimensions.get('window').height;
 
   useEffect(() => {
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         setUserId(user.uid);
-        // Load user's points and level
         const progressRef = ref(db, `users/${user.uid}/progress`);
         const streakRef = ref(db, `users/${user.uid}`);
         onValue(progressRef, (snapshot) => {
@@ -103,7 +112,6 @@ const Learn: React.FC = () => {
     setPoints(newPoints);
     setLevel(newLevel);
 
-    // Update Firebase
     const progressRef = ref(db, `users/${userId}/progress`);
     await update(progressRef, {
       points: newPoints,
@@ -113,46 +121,45 @@ const Learn: React.FC = () => {
 
   const updateStreak = async () => {
     const today = new Date();
-    const todayDateString = today.toISOString().split('T')[0]; // Format to YYYY-MM-DD
+    const todayDateString = today.toISOString().split('T')[0];
   
     if (!userId) return;
   
     const streakRef = ref(db, `users/${userId}`);
     
-    // Fetch the current streak and last completion date from Firebase
     const snapshot = await get(streakRef);
     if (snapshot.exists()) {
       const data = snapshot.val();
       const lastCompletionDate = data.lastCompletionDate;
       let newStreak = data.streak || 0;
   
-      // If last completion date isn't today, update streak and last completion date
       if (lastCompletionDate !== todayDateString) {
-        newStreak += 1; // Increment streak
+        newStreak += 1;
         await update(streakRef, {
           streak: newStreak,
           lastCompletionDate: todayDateString,
         });
-        setStreak(newStreak); // Update local state with new streak value
+        setStreak(newStreak);
       }
     } else {
-      // If no data exists for the user, start a new streak
       await update(streakRef, {
         streak: 1,
         lastCompletionDate: todayDateString,
       });
-      setStreak(1); // Set local streak state to 1
+      setStreak(1);
     }
   }
 
   const handleLessonPress = (lessonKey: string) => {
-    navigation.navigate('LessonScreen', {
-      userId,
-      language: currentLanguage,
-      level: currentLevel,
-      lessonKey,
-    });
-    updateStreak()
+    if (!isLessonLocked(Object.keys(languageData?.classes || {}).indexOf(lessonKey))) {
+      navigation.navigate('LessonScreen', {
+        userId,
+        language: currentLanguage,
+        level: currentLevel,
+        lessonKey,
+      });
+      updateStreak();
+    }
   };
 
   useEffect(() => {
@@ -206,6 +213,7 @@ const Learn: React.FC = () => {
     const unsubscribeProgress = onValue(progressRef, (snapshot) => {
       const data = snapshot.val() as UserProgress;
       setUserProgress(data);
+      updateCurrentLessonIndex(data);
     });
 
     return () => {
@@ -214,6 +222,14 @@ const Learn: React.FC = () => {
     };
   }, [userId, currentLanguage, currentLevel]);
 
+  const updateCurrentLessonIndex = (progressData: UserProgress) => {
+    if (languageData) {
+      const lessonKeys = Object.keys(languageData.classes);
+      const currentIndex = lessonKeys.findIndex(key => !progressData[currentLanguage]?.[currentLevel]?.[key]?.completed);
+      setCurrentLessonIndex(currentIndex === -1 ? lessonKeys.length - 1 : currentIndex);
+    }
+  };
+
   useEffect(() => {
     if (languageData && userProgress) {
       const totalLessons = Object.keys(languageData.classes).length;
@@ -221,6 +237,7 @@ const Learn: React.FC = () => {
         (lesson: any) => lesson.completed
       ).length;
       setProgress(totalLessons > 0 ? completedLessons / totalLessons : 0);
+      updateCurrentLessonIndex(userProgress);
     }
   }, [languageData, userProgress, currentLanguage, currentLevel]);
 
@@ -244,11 +261,40 @@ const Learn: React.FC = () => {
     return userProgress?.[currentLanguage]?.[currentLevel]?.[lessonKey]?.completed || false;
   };
 
+  const isLessonLocked = (index: number) => {
+    if (index === 0) return false; // First lesson is always unlocked
+    const previousLessonKey = Object.keys(languageData?.classes || {})[index - 1];
+    return !isLessonCompleted(previousLessonKey);
+  };
+
   const handleBackgroundPress = () => {
     if (dropdownVisible) {
       setDropdownVisible(false);
     }
   };
+
+  useEffect(() => {
+    if (flatListRef.current && currentLessonIndex !== -1) {
+      flatListRef.current.scrollToIndex({
+        index: currentLessonIndex,
+        animated: true,
+        viewPosition: 0.5,
+        viewOffset: windowHeight * 0.25, // Scroll to middle of the screen
+      });
+    }
+  }, [currentLessonIndex]);
+
+  const renderItem = ({ item, index }: { item: string; index: number }) => (
+    <LessonItem
+      title={languageData?.classes[item].title || ''}
+      completed={isLessonCompleted(item)}
+      imageUrl={languageData?.classes[item].imageUrl || ''}
+      nextLevel={languageData?.classes[item].nextLevel || ''}
+      onPress={() => handleLessonPress(item)}
+      isLocked={isLessonLocked(index)}
+      isCurrent={index === currentLessonIndex}
+    />
+  );
 
   return (
     <SafeAreaView style={styles.container}>
@@ -271,12 +317,12 @@ const Learn: React.FC = () => {
               <Text style={styles.streakText}>{streak}</Text>
             </View>
             <View style={styles.starContainer}>
-            <View style={styles.starWrapper}>
-              <Ionicons name="star" size={30} color="#FFD700" style={styles.starIcon} />
-              <Text style={styles.levelInsideStar}>{level}</Text>
+              <View style={styles.starWrapper}>
+                <Ionicons name="star" size={30} color="#FFD700" style={styles.starIcon} />
+                <Text style={styles.levelInsideStar}>{level}</Text>
+              </View>
+              <Text style={styles.starText}>{`${points}/100`}</Text>
             </View>
-            <Text style={styles.starText}>{`${points}/100`}</Text>
-          </View>
           </View>
         </View>
 
@@ -304,25 +350,28 @@ const Learn: React.FC = () => {
             onValueChange={handleLevelChange}
             style={styles.picker}
           >
-          {levels.map((level) => (
-            <Picker.Item key={level} label={level} value={level} />
-          ))}
-        </Picker>
-      </View>
+            {levels.map((level) => (
+              <Picker.Item key={level} label={level} value={level} />
+            ))}
+          </Picker>
+        </View>
 
         {languageData && Object.keys(languageData.classes).length > 0 ? (
           <FlatList
+            ref={flatListRef}
             data={Object.keys(languageData.classes)}
             keyExtractor={(item) => item}
-            renderItem={({ item }) => (
-              <LessonItem
-                title={languageData.classes[item].title}
-                completed={isLessonCompleted(item)}
-                imageUrl={languageData.classes[item].imageUrl}
-                nextLevel={languageData.classes[item].nextLevel}
-                onPress={() => handleLessonPress(item)}
-              />
-            )}
+            renderItem={renderItem}
+            getItemLayout={(data, index) => ({
+              length: 120, // Adjust this value based on your item height
+              offset: 120 * index,
+              index,
+            })}
+            initialNumToRender={10}
+            maxToRenderPerBatch={10}
+            windowSize={10}
+            removeClippedSubviews={true}
+            contentContainerStyle={{ paddingBottom: 20 }}
           />
         ) : (
           <Text>טוען שיעורים...</Text>
@@ -450,7 +499,7 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   lessonItem: {
-    flexDirection: 'row-reverse', // RTL layout
+    flexDirection: 'row-reverse',
     justifyContent: 'flex-start',
     alignItems: 'center',
     padding: 16,
@@ -459,22 +508,19 @@ const styles = StyleSheet.create({
     borderBottomColor: '#e0e0e0',
     marginHorizontal: 10,
     borderRadius: 10,
+    marginVertical: 5,
   },
   lessonComplete: {
-    flexDirection: 'row-reverse', // RTL layout
-    justifyContent: 'flex-start',
-    alignItems: 'center',
-    padding: 16,
     backgroundColor: '#caf7be',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
-    marginHorizontal: 10,
-    borderRadius: 10,
+  },
+  lessonLocked: {
+    backgroundColor: '#f0f0f0',
+    opacity: 0.7,
   },
   imageContainer: {
     justifyContent: 'center',
     alignItems: 'center',
-    marginLeft: 10, // Adjusted for RTL
+    marginLeft: 10,
   },
   image: {
     width: 65,
@@ -484,22 +530,30 @@ const styles = StyleSheet.create({
   checkIcon: {
     position: 'absolute',
     bottom: -5,
-    left: -5, // Adjusted for RTL
+    left: -5,
+  },
+  lockIcon: {
+    position: 'absolute',
+    bottom: -5,
+    left: -5,
   },
   lineBelowImage: {
     width: '100%',
     height: 3,
-    backgroundColor: '#e0e0e0', // Default color
+    backgroundColor: '#e0e0e0',
     marginTop: 5,
   },
   lineCompleted: {
-    backgroundColor: '#4CAF50', // Green color when completed
+    backgroundColor: '#4CAF50',
   },
   lessonTitle: {
     fontSize: 16,
     fontWeight: 'bold',
     color: '#333',
-    marginRight: 10, // Adjusted for RTL
+    marginRight: 10,
+  },
+  lockedText: {
+    color: '#999',
   },
   nextLevelText: {
     fontSize: 18,
@@ -558,6 +612,9 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     position: 'absolute',
   },
+  lessonCurrent: {
+    backgroundColor: '#b6cdd1'
+  },
   starContainer: {
     flexDirection: 'row-reverse',
     alignItems: 'center',
@@ -583,12 +640,12 @@ const styles = StyleSheet.create({
     marginLeft: 5,
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#4B0082', // A deep indigo color for a richer look
-    textShadowColor: 'rgba(75, 0, 130, 0.4)', // A shadow matching the text color
+    color: '#4B0082',
+    textShadowColor: 'rgba(75, 0, 130, 0.4)',
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 3,
-    letterSpacing: 0.5, // Slight spacing for a modern feel
-    borderColor: '#FFD700', // Gold border to match the starText
+    letterSpacing: 0.5,
+    borderColor: '#FFD700',
     borderWidth: 1,
     paddingHorizontal: 5,
     borderRadius: 5,

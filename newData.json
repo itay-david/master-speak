@@ -1,5 +1,4 @@
 {
-  "languages": {
     "spanish": {
       "levels": {
         "A1": {
@@ -471,10 +470,297 @@
                   "description": "תרגום: מה השם שלך?"
                 }
               }
+            },
+            "class14": {
+              "title": "¡Hola!",
+              "imageUrl": "https://www.clker.com/cliparts/h/e/s/t/j/U/grey-circle.svg.med.png",
+              "lessons": {
+                "lesson1": {
+                  "type": "newSentence",
+                  "title": "תראו, משהו חדש!",
+                  "vidUrl": "19D3-HYSFcXWRpA4xieA1nbTkOmjjzcXj",
+                  "imageUrl": "https://wallpapers.com/images/hd/1920x1080-aesthetic-glrfk0ntspz3tvxg.jpg",
+                  "sentence": "¡Hola!",
+                  "translate": "היי!"
+                },
+                "lesson2": {
+                  "type": "trueOrFalse",
+                  "title": "נכון או לא נכון?",
+                  "vidUrl": "19D3-HYSFcXWRpA4xieA1nbTkOmjjzcXj",
+                  "imageUrl": "https://wallpapers.com/images/hd/1920x1080-aesthetic-glrfk0ntspz3tvxg.jpg",
+                  "sentence": "¡Hola!",
+                  "question": "זה אומר \"היי\"",
+                  "options": {
+                    "option1": "נכון",
+                    "option2": "לא נכון"
+                  },
+                  "answer": "נכון",
+                  "description": "מאייתים את זה עם \"h\" בהתחלה למרות שלא הוגים את זה."
+                },
+                "lesson3": {
+                  "type": "newSentence",
+                  "title": "תראו, משהו חדש!",
+                  "vidUrl": "19D3-HYSFcXWRpA4xieA1nbTkOmjjzcXj",
+                  "imageUrl": "https://wallpapers.com/images/hd/1920x1080-aesthetic-glrfk0ntspz3tvxg.jpg",
+                  "sentence": "¡Buenos días!",
+                  "translate": "בוקר טוב!"
+                },
+                "lesson4": {
+                  "type": "completeSentence",
+                  "title": "השלם את המשפט.",
+                  "vidUrl" :"19D3-HYSFcXWRpA4xieA1nbTkOmjjzcXj",
+                  "imageUrl": "https://wallpapers.com/images/hd/1920x1080-aesthetic-glrfk0ntspz3tvxg.jpg",
+                  "sentence": "¡Buenos _____!",
+                  "revealedSentence": "¡Buenos días!",
+                  "options": {
+                    "option1": "días",
+                    "option2": "dio"
+                  },
+                  "answer": "días",
+                  "description": "אנחנו אומרים \"!Buenos días¡\" בבוקר."
+                },
+                "lesson5": {
+                  "type": "newSentence",
+                  "title": "תראו, משהו חדש!",
+                  "vidUrl": "19D3-HYSFcXWRpA4xieA1nbTkOmjjzcXj",
+                  "imageUrl": "https://wallpapers.com/images/hd/1920x1080-aesthetic-glrfk0ntspz3tvxg.jpg",
+                  "sentence": "¡Adiós!",
+                  "translate": "להתראות!"
+                },
+                "lesson6": {
+                  "type": "completeSentence",
+                  "title": "השלם את המשפט.",
+                  "vidUrl" :"19D3-HYSFcXWRpA4xieA1nbTkOmjjzcXj",
+                  "imageUrl": "https://wallpapers.com/images/hd/1920x1080-aesthetic-glrfk0ntspz3tvxg.jpg",
+                  "sentence": "¡_____!",
+                  "revealedSentence": "¡Adiós!",
+                  "options": {
+                    "option1": "Adiós",
+                    "option2": "Ados"
+                  },
+                  "answer": "Adiós",
+                  "description": "שמתם לב שמשתמשים בסימן קריאה גם בהתחלה (¡) וגם בסוף (!) ?"
+                }
+              }
+            },
+            "class13": {
+              "title": "¡Hola!",
+              "imageUrl": "https://www.clker.com/cliparts/h/e/s/t/j/U/grey-circle.svg.med.png",
+              "lessons": {
+                "lesson1": {
+                  "type": "newSentence",
+                  "title": "תראו, משהו חדש!",
+                  "vidUrl": "19D3-HYSFcXWRpA4xieA1nbTkOmjjzcXj",
+                  "imageUrl": "https://wallpapers.com/images/hd/1920x1080-aesthetic-glrfk0ntspz3tvxg.jpg",
+                  "sentence": "¡Hola!",
+                  "translate": "היי!"
+                },
+                "lesson2": {
+                  "type": "trueOrFalse",
+                  "title": "נכון או לא נכון?",
+                  "vidUrl": "19D3-HYSFcXWRpA4xieA1nbTkOmjjzcXj",
+                  "imageUrl": "https://wallpapers.com/images/hd/1920x1080-aesthetic-glrfk0ntspz3tvxg.jpg",
+                  "sentence": "¡Hola!",
+                  "question": "זה אומר \"היי\"",
+                  "options": {
+                    "option1": "נכון",
+                    "option2": "לא נכון"
+                  },
+                  "answer": "נכון",
+                  "description": "מאייתים את זה עם \"h\" בהתחלה למרות שלא הוגים את זה."
+                },
+                "lesson3": {
+                  "type": "newSentence",
+                  "title": "תראו, משהו חדש!",
+                  "vidUrl": "19D3-HYSFcXWRpA4xieA1nbTkOmjjzcXj",
+                  "imageUrl": "https://wallpapers.com/images/hd/1920x1080-aesthetic-glrfk0ntspz3tvxg.jpg",
+                  "sentence": "¡Buenos días!",
+                  "translate": "בוקר טוב!"
+                },
+                "lesson4": {
+                  "type": "completeSentence",
+                  "title": "השלם את המשפט.",
+                  "vidUrl" :"19D3-HYSFcXWRpA4xieA1nbTkOmjjzcXj",
+                  "imageUrl": "https://wallpapers.com/images/hd/1920x1080-aesthetic-glrfk0ntspz3tvxg.jpg",
+                  "sentence": "¡Buenos _____!",
+                  "revealedSentence": "¡Buenos días!",
+                  "options": {
+                    "option1": "días",
+                    "option2": "dio"
+                  },
+                  "answer": "días",
+                  "description": "אנחנו אומרים \"!Buenos días¡\" בבוקר."
+                },
+                "lesson5": {
+                  "type": "newSentence",
+                  "title": "תראו, משהו חדש!",
+                  "vidUrl": "19D3-HYSFcXWRpA4xieA1nbTkOmjjzcXj",
+                  "imageUrl": "https://wallpapers.com/images/hd/1920x1080-aesthetic-glrfk0ntspz3tvxg.jpg",
+                  "sentence": "¡Adiós!",
+                  "translate": "להתראות!"
+                },
+                "lesson6": {
+                  "type": "completeSentence",
+                  "title": "השלם את המשפט.",
+                  "vidUrl" :"19D3-HYSFcXWRpA4xieA1nbTkOmjjzcXj",
+                  "imageUrl": "https://wallpapers.com/images/hd/1920x1080-aesthetic-glrfk0ntspz3tvxg.jpg",
+                  "sentence": "¡_____!",
+                  "revealedSentence": "¡Adiós!",
+                  "options": {
+                    "option1": "Adiós",
+                    "option2": "Ados"
+                  },
+                  "answer": "Adiós",
+                  "description": "שמתם לב שמשתמשים בסימן קריאה גם בהתחלה (¡) וגם בסוף (!) ?"
+                }
+              }
+            },
+            "class12": {
+              "title": "¡Hola!",
+              "imageUrl": "https://www.clker.com/cliparts/h/e/s/t/j/U/grey-circle.svg.med.png",
+              "lessons": {
+                "lesson1": {
+                  "type": "newSentence",
+                  "title": "תראו, משהו חדש!",
+                  "vidUrl": "19D3-HYSFcXWRpA4xieA1nbTkOmjjzcXj",
+                  "imageUrl": "https://wallpapers.com/images/hd/1920x1080-aesthetic-glrfk0ntspz3tvxg.jpg",
+                  "sentence": "¡Hola!",
+                  "translate": "היי!"
+                },
+                "lesson2": {
+                  "type": "trueOrFalse",
+                  "title": "נכון או לא נכון?",
+                  "vidUrl": "19D3-HYSFcXWRpA4xieA1nbTkOmjjzcXj",
+                  "imageUrl": "https://wallpapers.com/images/hd/1920x1080-aesthetic-glrfk0ntspz3tvxg.jpg",
+                  "sentence": "¡Hola!",
+                  "question": "זה אומר \"היי\"",
+                  "options": {
+                    "option1": "נכון",
+                    "option2": "לא נכון"
+                  },
+                  "answer": "נכון",
+                  "description": "מאייתים את זה עם \"h\" בהתחלה למרות שלא הוגים את זה."
+                },
+                "lesson3": {
+                  "type": "newSentence",
+                  "title": "תראו, משהו חדש!",
+                  "vidUrl": "19D3-HYSFcXWRpA4xieA1nbTkOmjjzcXj",
+                  "imageUrl": "https://wallpapers.com/images/hd/1920x1080-aesthetic-glrfk0ntspz3tvxg.jpg",
+                  "sentence": "¡Buenos días!",
+                  "translate": "בוקר טוב!"
+                },
+                "lesson4": {
+                  "type": "completeSentence",
+                  "title": "השלם את המשפט.",
+                  "vidUrl" :"19D3-HYSFcXWRpA4xieA1nbTkOmjjzcXj",
+                  "imageUrl": "https://wallpapers.com/images/hd/1920x1080-aesthetic-glrfk0ntspz3tvxg.jpg",
+                  "sentence": "¡Buenos _____!",
+                  "revealedSentence": "¡Buenos días!",
+                  "options": {
+                    "option1": "días",
+                    "option2": "dio"
+                  },
+                  "answer": "días",
+                  "description": "אנחנו אומרים \"!Buenos días¡\" בבוקר."
+                },
+                "lesson5": {
+                  "type": "newSentence",
+                  "title": "תראו, משהו חדש!",
+                  "vidUrl": "19D3-HYSFcXWRpA4xieA1nbTkOmjjzcXj",
+                  "imageUrl": "https://wallpapers.com/images/hd/1920x1080-aesthetic-glrfk0ntspz3tvxg.jpg",
+                  "sentence": "¡Adiós!",
+                  "translate": "להתראות!"
+                },
+                "lesson6": {
+                  "type": "completeSentence",
+                  "title": "השלם את המשפט.",
+                  "vidUrl" :"19D3-HYSFcXWRpA4xieA1nbTkOmjjzcXj",
+                  "imageUrl": "https://wallpapers.com/images/hd/1920x1080-aesthetic-glrfk0ntspz3tvxg.jpg",
+                  "sentence": "¡_____!",
+                  "revealedSentence": "¡Adiós!",
+                  "options": {
+                    "option1": "Adiós",
+                    "option2": "Ados"
+                  },
+                  "answer": "Adiós",
+                  "description": "שמתם לב שמשתמשים בסימן קריאה גם בהתחלה (¡) וגם בסוף (!) ?"
+                }
+              }
+            },
+            "class11": {
+              "title": "¡Hola!",
+              "imageUrl": "https://www.clker.com/cliparts/h/e/s/t/j/U/grey-circle.svg.med.png",
+              "lessons": {
+                "lesson1": {
+                  "type": "newSentence",
+                  "title": "תראו, משהו חדש!",
+                  "vidUrl": "19D3-HYSFcXWRpA4xieA1nbTkOmjjzcXj",
+                  "imageUrl": "https://wallpapers.com/images/hd/1920x1080-aesthetic-glrfk0ntspz3tvxg.jpg",
+                  "sentence": "¡Hola!",
+                  "translate": "היי!"
+                },
+                "lesson2": {
+                  "type": "trueOrFalse",
+                  "title": "נכון או לא נכון?",
+                  "vidUrl": "19D3-HYSFcXWRpA4xieA1nbTkOmjjzcXj",
+                  "imageUrl": "https://wallpapers.com/images/hd/1920x1080-aesthetic-glrfk0ntspz3tvxg.jpg",
+                  "sentence": "¡Hola!",
+                  "question": "זה אומר \"היי\"",
+                  "options": {
+                    "option1": "נכון",
+                    "option2": "לא נכון"
+                  },
+                  "answer": "נכון",
+                  "description": "מאייתים את זה עם \"h\" בהתחלה למרות שלא הוגים את זה."
+                },
+                "lesson3": {
+                  "type": "newSentence",
+                  "title": "תראו, משהו חדש!",
+                  "vidUrl": "19D3-HYSFcXWRpA4xieA1nbTkOmjjzcXj",
+                  "imageUrl": "https://wallpapers.com/images/hd/1920x1080-aesthetic-glrfk0ntspz3tvxg.jpg",
+                  "sentence": "¡Buenos días!",
+                  "translate": "בוקר טוב!"
+                },
+                "lesson4": {
+                  "type": "completeSentence",
+                  "title": "השלם את המשפט.",
+                  "vidUrl" :"19D3-HYSFcXWRpA4xieA1nbTkOmjjzcXj",
+                  "imageUrl": "https://wallpapers.com/images/hd/1920x1080-aesthetic-glrfk0ntspz3tvxg.jpg",
+                  "sentence": "¡Buenos _____!",
+                  "revealedSentence": "¡Buenos días!",
+                  "options": {
+                    "option1": "días",
+                    "option2": "dio"
+                  },
+                  "answer": "días",
+                  "description": "אנחנו אומרים \"!Buenos días¡\" בבוקר."
+                },
+                "lesson5": {
+                  "type": "newSentence",
+                  "title": "תראו, משהו חדש!",
+                  "vidUrl": "19D3-HYSFcXWRpA4xieA1nbTkOmjjzcXj",
+                  "imageUrl": "https://wallpapers.com/images/hd/1920x1080-aesthetic-glrfk0ntspz3tvxg.jpg",
+                  "sentence": "¡Adiós!",
+                  "translate": "להתראות!"
+                },
+                "lesson6": {
+                  "type": "completeSentence",
+                  "title": "השלם את המשפט.",
+                  "vidUrl" :"19D3-HYSFcXWRpA4xieA1nbTkOmjjzcXj",
+                  "imageUrl": "https://wallpapers.com/images/hd/1920x1080-aesthetic-glrfk0ntspz3tvxg.jpg",
+                  "sentence": "¡_____!",
+                  "revealedSentence": "¡Adiós!",
+                  "options": {
+                    "option1": "Adiós",
+                    "option2": "Ados"
+                  },
+                  "answer": "Adiós",
+                  "description": "שמתם לב שמשתמשים בסימן קריאה גם בהתחלה (¡) וגם בסוף (!) ?"
+                }
+              }
             }
           }
         }
       }
     }
-  }
 }
