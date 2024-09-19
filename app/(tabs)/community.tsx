@@ -44,7 +44,7 @@ const Community: React.FC = () => {
 
   const LANGUAGE_STORAGE_KEY = '@community_language_preference';
 
-  const languages: { [key: string]: string } = {
+  const languages: { [key: string]: string} = {
     spanish: 'es',
     french: 'fr',
     german: 'de',
