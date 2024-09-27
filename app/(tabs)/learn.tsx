@@ -22,35 +22,65 @@ interface LessonItemProps {
   index: number;
 }
 
-const colors = ['#FFA07A', '#98D8C8', '#4ECDC4', '#45B7D1', '#F7DC6F'];
+const colors = ['#83C5BE', '#CEA47E', '#588157', '#D00000', '#efc3e6'];
+
+const colorImageMapping = {
+  '#83C5BE': {
+    shine: require('../../assets/LessonItems/shine_lightblue.png'),
+    bottomCurve: require('../../assets/LessonItems/bottom_curve_lightblue.png'),
+  },
+  '#CEA47E': {
+    shine: require('../../assets/LessonItems/shine_brown.png'),
+    bottomCurve: require('../../assets/LessonItems/bottom_curve_brown.png'),
+  },
+  '#588157': {
+    shine: require('../../assets/LessonItems/shine_green.png'),
+    bottomCurve: require('../../assets/LessonItems/bottom_curve_green.png'),
+  },
+  '#D00000': {
+    shine: require('../../assets/LessonItems/shine_red.png'),
+    bottomCurve: require('../../assets/LessonItems/bottom_curve_red.png'),
+  },
+  '#efc3e6': {
+    shine: require('../../assets/LessonItems/shine_pink.png'),
+    bottomCurve: require('../../assets/LessonItems/bottom_curve_pink.png'),
+  },
+};
 
 const LessonItem: React.FC<LessonItemProps> = ({ title, index, completed, onPress, imageUrl, nextLevel, isLocked, isCurrent }) => {
   const backgroundColor = colors[index % colors.length];
+  const { shine: shineImageSource, bottomCurve: bottomCurveImageSource } = colorImageMapping[backgroundColor];
   
   return (
-    <TouchableOpacity onPress={onPress} style={styles.shadowBox}>
+    <TouchableOpacity onPress={onPress}>
       <LinearGradient
         colors={[backgroundColor, backgroundColor]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={[
           styles.lessonItem,
+          styles.shadowBox,
           completed && styles.lessonComplete,
           isLocked && styles.lessonLocked,
           isCurrent && styles.lessonCurrent
         ]}
       >
-        <View style={styles.insetShadow} />
-        <View style={styles.imageContainer}>
-          <Image
-            source={{ uri: imageUrl || "https://www.pngplay.com/wp-content/uploads/12/Thing-Transparent-Images.png" }}
-            style={styles.image}
-          />
-          {completed && <Ionicons name="checkmark-circle" size={24} color="green" style={styles.checkIcon} />}
-          {isLocked && <Ionicons name="lock-closed" size={24} color="gray" style={styles.lockIcon} />}
+        <View style={styles.contentContainer}>
+          <View style={styles.imageContainer}>
+            <Image
+              source={{ uri: imageUrl || "https://www.pngplay.com/wp-content/uploads/12/Thing-Transparent-Images.png" }}
+              style={styles.image}
+            />
+            {completed && <Ionicons name="checkmark-circle" size={24} color="green" style={styles.checkIcon} />}
+            {isLocked && <Ionicons name="lock-closed" size={24} color="gray" style={styles.lockIcon} />}
+          </View>
+          <View style={styles.textContainer}>
+            <Text style={[styles.lessonTitle, isLocked && styles.lockedText]}>{title}</Text>
+            {nextLevel && <Text style={styles.nextLevelText}>{nextLevel}</Text>}
+          </View>
         </View>
-        <Text style={[styles.lessonTitle, isLocked && styles.lockedText]}>{title}</Text>
-        {nextLevel && <Text style={styles.nextLevelText}>{nextLevel}</Text>}
+        <Image source={shineImageSource} style={styles.shineEffect} />
+        <Image source={bottomCurveImageSource} style={styles.bottomCurve} />
       </LinearGradient>
     </TouchableOpacity>
   );
@@ -80,6 +110,55 @@ const LoadingItem: React.FC = () => {
   );
 };
 
+const StarLevel = ({ level }) => {
+  let levelStyle;
+
+  if (level < 10) {
+    levelStyle = styles.singleDigitLevel;
+  } else if (level >= 100) {
+    levelStyle = styles.threeDigitLevel;
+  } else {
+    // Handles levels between 10 and 99
+    levelStyle = styles.doubleDigitLevel;
+  }
+
+  return (
+    <View style={styles.starWrapper}>
+      <Image
+        source={require('../../assets/home_pics/star_level.png')}
+        style={styles.starIcon}
+      />
+      <Text style={[styles.levelInsideStar, levelStyle]}>
+        {level}
+      </Text>
+    </View>
+  );
+};
+
+const StreakLevel = ({ streak }) => {
+  let streakStyle;
+
+  if (streak < 10) {
+    streakStyle = styles.singleDigitStreak;
+  } else if (streak >= 100) {
+    streakStyle = styles.threeDigitStreak;
+  } else {
+    streakStyle = styles.doubleDigitStreak;
+  }
+
+  return (
+    <View style={styles.streakWrapper}>
+      <Image
+        source={require('../../assets/home_pics/fire_streak.png')}
+        style={styles.fireIcon}
+      />
+      <Text style={[styles.streakInsideFire, streakStyle]}>
+        {streak}
+      </Text>
+    </View>
+  );
+};
+
 const Learn: React.FC = () => {
   const [progress, setProgress] = useState(0);
   const [userId, setUserId] = useState<string | null>(null);
@@ -98,10 +177,10 @@ const Learn: React.FC = () => {
   const flatListRef = useRef<FlatList>(null);
 
   const languages: any = {
-    spanish: 'es',
-    french: 'fr',
-    german: 'de',
-    english: 'us',
+    spanish: { code: 'es', title: 'ספרדית' },
+    french: { code: 'fr', title: 'צרפתית' },
+    german: { code: 'de', title: 'גרמנית' },
+    english: { code: 'us', title: 'אנגלית' },
   };
   const levels = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
 
@@ -405,37 +484,32 @@ const Learn: React.FC = () => {
         <View style={styles.topBar}>
           <View style={styles.flagArrowContainer}>
             <TouchableOpacity style={styles.flagButton} onPress={() => setDropdownVisible(!dropdownVisible)}>
-              <CountryFlag style={styles.flagEmoji} isoCode={languages[currentLanguage]} size={20} />
+              <CountryFlag style={styles.flagEmoji} isoCode={languages[currentLanguage].code} size={20} />
             </TouchableOpacity>
             <Ionicons name="chevron-down" size={16} color="black" style={styles.arrowIcon} />
           </View>
           <View style={styles.statsContainer}>
             <View style={styles.streakContainer}>
-              <Text style={styles.streakEmoji}>🔥</Text>
-              <Text style={styles.streakText}>{streak}</Text>
+              <StreakLevel streak={streak} />
             </View>
             <View style={styles.starContainer}>
-              <View style={styles.starWrapper}>
-                <Ionicons name="star" size={30} color="#FFD700" style={styles.starIcon} />
-                <Text style={styles.levelInsideStar}>{level}</Text>
-              </View>
+              <StarLevel level={level} />
               <Text style={styles.starText}>{`${points}/100`}</Text>
             </View>
           </View>
         </View>
-
         {dropdownVisible && (
           <Animated.View style={[styles.dropdown, { opacity: fadeAnim }]}>
             <ScrollView style={styles.dropdownScrollView}>
               {Object.keys(languages).map((lang) => (
                 <TouchableOpacity key={lang} style={styles.dropdownItem} onPress={() => handleLanguageChange(lang)}>
-                <CountryFlag isoCode={languages[lang]} size={20} style={styles.dropdownFlag} />
-                <Text style={styles.dropdownItemText}>{lang.charAt(0).toUpperCase() + lang.slice(1)}</Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        </Animated.View>
-      )}
+                  <CountryFlag isoCode={languages[lang].code} size={20} style={styles.dropdownFlag} />
+                  <Text style={styles.dropdownItemText}>{languages[lang].title}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </Animated.View>
+        )}
 
       <View style={styles.progressContainer}>
         <ProgressBar progress={progress} />
@@ -491,14 +565,6 @@ topBar: {
   justifyContent: 'space-between',
   paddingHorizontal: 16,
   paddingVertical: 10,
-  borderBottomWidth: 1,
-  borderBottomColor: '#e0e0e0',
-  backgroundColor: '#ffffff',
-  shadowColor: '#000',
-  shadowOffset: { width: 0, height: 2 },
-  shadowOpacity: 0.1,
-  shadowRadius: 5,
-  elevation: 5,
 },
 flagArrowContainer: {
   flexDirection: 'row',
@@ -529,6 +595,49 @@ arrowIcon: {
 statsContainer: {
   flexDirection: 'row',
   alignItems: 'center',
+},
+streakWrapper: {
+  position: 'relative',
+  width: 50,
+  height: 50,
+  justifyContent: 'center',
+  alignItems: 'center',
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 1 },
+  shadowOpacity: 0.8,
+  shadowRadius: 2,  
+  elevation: 5
+},
+fireIcon: {
+  position: 'absolute',
+  zIndex: 1,
+  width: 45,
+  height: 56,
+},
+streakInsideFire: {
+  position: 'absolute',
+  zIndex: 2,
+  fontSize: 18,
+  fontWeight: 'bold',
+  color: '#fff',
+  textAlign: 'center',
+  textAlignVertical: 'center',
+  textShadowColor: 'rgba(0, 0, 0, 0.3)',
+  textShadowOffset: { width: 1, height: 1 },
+  textShadowRadius: 2,
+},
+singleDigitStreak: {
+  right: 19,
+  fontSize: 22
+},
+doubleDigitStreak: {
+  right: 13,
+  fontSize: 22
+},
+threeDigitStreak: {
+  top: 16,
+  right: 10,
+  fontSize: 16
 },
 streakContainer: {
   flexDirection: 'row',
@@ -610,16 +719,6 @@ dropdownItemText: {
 shadowBox: {
  marginVertical: 10,
 },
-insetShadow: {
-  position: 'absolute',
-  top: 80,
-  left: 0,
-  right: 0,
-  bottom: 0,
-  borderRadius: 0,
-  zIndex: 0,
-  backgroundColor: 'rgba(0, 0, 0, 0.15)', // Semi-transparent overlay for inner shadow
-},
 lessonItem: {
   flexDirection: 'row',
   justifyContent: 'space-between',
@@ -632,14 +731,24 @@ lessonItem: {
   marginHorizontal: 25,
   borderRadius: 15,
   marginVertical: 5,
-  shadowColor:"#000000",
-shadowOffset: {
-   width: 0,
-   height: 5,
 },
-shadowOpacity: 1,
-shadowRadius: 0,
-elevation: 10
+bottomCurve: {
+  position: 'absolute',
+  bottom: 0, // Slightly overlapped to avoid thin line
+  left: 0,
+  right: 0,
+  width: '108.2%',
+  height: 20, // Adjust based on your image's aspect ratio
+  resizeMode: 'stretch',
+},
+contentContainer: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  zIndex: 1, // Ensure content is above the shine effect
+},
+textContainer: {
+  flex: 1,
+  alignItems: 'center'
 },
 lessonComplete: {
   backgroundColor: '#e8f5e9',
@@ -652,23 +761,32 @@ lessonCurrent: {
   borderWidth: 2,
   borderColor: '#fff',
   transform: [{ scale: 1.05 }],
-  shadowColor: "#00fffb",
-shadowOffset: {
-  width: 0,
-  height: 9,
-},
-shadowOpacity:  0.22,
-shadowRadius: 9.22,
-elevation: 12
+  shadowColor: "#000",
+  
+  shadowOffset: {
+    width: 0,
+    height: 0,
+  },
+  shadowOpacity: 1,
+  shadowRadius: 10,
+  elevation: 24,
 },
 imageContainer: {
   position: 'relative',
   marginRight: 10,
-  zIndex: 3,
 },
 image: {
   width: 70,
   height: 70,
+},
+shineEffect: {
+  position: 'absolute',
+  top: -55,
+  right: 15,
+  width: 150, // Increased size
+  height: 150, // Increased size
+  resizeMode: 'contain',
+  opacity: 0.7, // Slightly transparent
 },
 checkIcon: {
   position: 'absolute',
@@ -684,7 +802,10 @@ lockIcon: {
   backgroundColor: '#ffffff',
   borderRadius: 12,
 },
-lessonTitle: {
+lessonTitle: {  
+  position: 'absolute',
+  top: -10,
+  right: 10,
   flex: 1,
   fontSize: 16,
   fontWeight: 'bold',
@@ -699,9 +820,10 @@ nextLevelText: {
   marginLeft: 10,
 },
 progressContainer: {
-  padding: 16,
+  padding: 10,
   backgroundColor: '#ffffff',
-  marginBottom: 10,
+  marginHorizontal: 20,
+  marginVertical: 10,
   borderRadius: 10,
   shadowColor: '#000',
   shadowOffset: { width: 0, height: 2 },
@@ -712,7 +834,7 @@ progressContainer: {
 progressPercentage: {
   fontSize: 16,
   fontWeight: 'bold',
-  color: '#4CAF50',
+  color: '#0B739B',
   textAlign: 'right',
   marginTop: 5,
 },
@@ -727,7 +849,7 @@ noClassesText: {
 },
 starWrapper: {
   position: 'relative',
-  width: 30,
+  width: 50,
   height: 30,
   justifyContent: 'center',
   alignItems: 'center',
@@ -735,34 +857,45 @@ starWrapper: {
 starIcon: {
   position: 'absolute',
   zIndex: 1,
+  width: 55,
+  height: 55
 },
 levelInsideStar: {
-  zIndex: 2,
-  color: '#333',
-  fontSize: 12,
-  fontWeight: 'bold',
   position: 'absolute',
+  zIndex: 2,
+  fontSize: 18,
+  fontWeight: 'bold',
+  color: '#fff',
+  textAlign: 'center',
+  textAlignVertical: 'center',
+  textShadowColor: 'rgba(0, 0, 0, 0.3)',
+  textShadowOffset: { width: 1, height: 1 },
+  textShadowRadius: 2,
+},
+singleDigitLevel: {
+  right: 19,
+  fontSize: 22
+},
+doubleDigitLevel: {
+  right: 15,
+},
+threeDigitLevel: {
+  right: 12,
+  fontSize: 16
 },
 starContainer: {
   flexDirection: 'row',
   alignItems: 'center',
-  backgroundColor: '#fff',
   padding: 5,
   borderRadius: 15,
-  shadowColor: '#000',
-  shadowOffset: { width: 0, height: 2 },
-  shadowOpacity: 0.2,
-  shadowRadius: 4,
-  elevation: 3,
+
 },
 starText: {
   marginLeft: 5,
+  marginTop: 10,
   fontSize: 16,
   fontWeight: '700',
   color: '#FFD700',
-  textShadowColor: 'rgba(0, 0, 0, 0.2)',
-  textShadowOffset: { width: 1, height: 1 },
-  textShadowRadius: 2,
 },
 loadingContainer: {
   paddingVertical: 20,
